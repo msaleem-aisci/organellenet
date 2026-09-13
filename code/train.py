@@ -60,6 +60,8 @@ def parse_args():
 def main():
     args = parse_args()
 
+    print(args.config)
+    sys.exit(0)
     # 1. Load config
     config = load_config(args.config)
     
