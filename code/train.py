@@ -63,7 +63,7 @@ def main():
     
     # 1. Load config
     config = load_config(args.config)
-    print(args.config)
+    print(config)
     sys.exit(0)
     
     # 2. Map CLI Overrides safely to the config object
