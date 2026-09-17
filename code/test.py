@@ -33,7 +33,7 @@ def main():
     # 2. Load the configuration
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
-    root_dir = cfg.root_dir
+    root_dir = cfg.path.root_dir
     split_handler(cfg.path.blueprint_json, root_dir)
     sys.exit(0)
     # 3. Print the verified schemas
