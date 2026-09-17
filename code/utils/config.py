@@ -121,7 +121,7 @@ class ExperimentConfig:
 
     # We use default_factory to automatically load the Python dictionary.
     # It will be universally applied to every experiment.
-    semantic_map: Dict[int, List[int]] = field(default_factory=lambda: SEMANTIC_MAP_13)
+    semantic_map: Dict[int, int] = field(default_factory=lambda: SEMANTIC_MAP_13)
 
 # ---------------------------------------------------------------------------
 # YAML Loading with Inheritance
