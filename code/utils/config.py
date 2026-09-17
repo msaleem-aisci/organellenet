@@ -80,8 +80,8 @@ class PathConfig:
             self.val_crops_json = os.path.join(self.root_dir, self.val_crops_json)
         if not os.path.isabs(self.test_crops_json):
             self.test_crops_json = os.path.join(self.root_dir, self.test_crops_json)
-            
-        self.blueprint_json = os.path.join(self.root_dir, 'all_jsons')
+        if not os.path.isabs(self.blueprint_json):
+            self.blueprint_json = os.path.join(self.root_dir, 'all_jsons')
 
 @dataclass
 class DataConfig:
