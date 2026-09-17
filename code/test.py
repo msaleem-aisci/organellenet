@@ -34,8 +34,8 @@ def main():
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
     
-    # split_handler(cfg.path.blueprint_json, )
-    print(cfg.path.blueprint_json)
+    split_handler(cfg.path.blueprint_json, "erer")
+
     sys.exit(0)
     # 3. Print the verified schemas
     # Because we used @dataclass in config.py, Python automatically formats 
