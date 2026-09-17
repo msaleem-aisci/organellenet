@@ -58,9 +58,29 @@ def main():
         zarr_map = ZARR_MAP,
     )
 
-    print(f"crops: {train_dataset.crops}")
-    sys.exit(0)
-    train_sampler = create_rfs_sampler()
+
+    train_sampler = create_rfs_sampler(
+        crops_list=train_dataset.crops, 
+        rfs_weights_dict=rfs_weights_dict, 
+        num_samples=8000  
+    )
+
+    train_dataloader = DataLoader(
+        train_dataset, 
+        batch_size=64, 
+        sampler=train_sampler, 
+        num_workers=4,   
+        prefetch_factor=2,
+        pin_memory=True
+    )
+
+    # Optional: Quick loop test to verify tensor output shapes
+    print("--- DataLoader Pipeline Test ---")
+    for batch_idx, (em_tensors, label_tensors) in enumerate(train_dataloader):
+        print(f"Batch {batch_idx + 1}")
+        print(f"EM Tensor Shape:    {em_tensors.shape}  | Dtype: {em_tensors.dtype}")
+        print(f"Label Tensor Shape: {label_tensors.shape} | Dtype: {label_tensors.dtype}")
+        break # Test only the first batch
 
 
 
