@@ -30,6 +30,7 @@ from data.zarr_utils import build_zarr_map, select_z_slice, extract_both_patches
 from data.dataset import MISO2DDataset
 from data.sampler import create_rfs_sampler 
 from code.training.losses import build_loss
+from code.models.unet import build_model
 
 
 def parse_args():
