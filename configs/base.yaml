@@ -46,6 +46,6 @@ semantic_map:
 
 
 architectures:
-  - unet
-  - resnet
-  - swin 
+  unet: 2
+  swin: 1
+  resnet: 3

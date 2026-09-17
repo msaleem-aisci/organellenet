@@ -68,6 +68,12 @@ class TrainingConfig:
     warmup_epochs: int
     mixed_precision: bool
 
+@dataclass
+class ArchConfig:
+    unet: int
+    swin: int
+    resnet: int
+
 
 @dataclass
 class ExperimentConfig:
@@ -78,7 +84,7 @@ class ExperimentConfig:
     training: TrainingConfig
     semantic_map: Dict[int, List[int]]
     name: str
-    architectures: list
+    architectures: ArchConfig
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +109,8 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         training=TrainingConfig(**raw["training"]),
         semantic_map=raw["semantic_map"],
         name= raw["name"],
-        architectures= raw["architectures"]
+        architectures= ArchConfig(**raw["architectures"])
+        
     )
 
 def load_config(config_path: str) -> ExperimentConfig:
