@@ -1,5 +1,8 @@
 experiment_name: "2D Optimal"
 
+blueprint_json: "latest_baseline_centroids.json"
+rfs_weights: "rfs_weights.json"
+
 path:
   root_dir: "/kaggle/working/organellenet" 
   blueprint_json: ""   

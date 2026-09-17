@@ -119,6 +119,8 @@ class ExperimentConfig:
     data: DataConfig
     model: ModelConfig
     training: TrainingConfig
+    blueprint_json: str
+    rfs_weights: str
  
 
     # We use default_factory to automatically load the Python dictionary.
@@ -145,6 +147,8 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         data=DataConfig(**raw["data"]),
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
+        blueprint_json = raw['blueprint_json']
+        rfs_weights= raw['blueprint_json']
      
 
     )

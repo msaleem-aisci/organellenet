@@ -19,30 +19,7 @@ if _PROJECT_ROOT not in sys.path:
 
 
 def extract_safe(zarr_arr, start_coords, patch_shape, pad_value=0, out_dtype=None):
-    """
-    Extract a 3D patch from a zarr array with safe boundary clamping.
 
-    If the requested region extends beyond the array boundaries, the output
-    patch is zero-padded (or filled with `pad_value`).
-
-    Parameters
-    ----------
-    zarr_arr : zarr.Array
-        Source zarr array (3D).
-    start_coords : array-like of int, shape (3,)
-        Starting ZYX coordinates for extraction.
-    patch_shape : list/tuple of int, length 3
-        Desired output patch shape [Z, Y, X].
-    pad_value : scalar, optional
-        Fill value for out-of-bounds regions. Default 0.
-    out_dtype : dtype, optional
-        Output dtype. If None, uses zarr_arr.dtype.
-
-    Returns
-    -------
-    np.ndarray
-        Extracted patch of shape `patch_shape`.
-    """
     arr_shape = zarr_arr.shape
     z_min, z_max = max(0, start_coords[0]), min(arr_shape[0], start_coords[0] + patch_shape[0])
     y_min, y_max = max(0, start_coords[1]), min(arr_shape[1], start_coords[1] + patch_shape[1])
@@ -66,21 +43,6 @@ def extract_safe(zarr_arr, start_coords, patch_shape, pad_value=0, out_dtype=Non
 
 
 def build_zarr_map(data_root: str) -> dict:
-    """
-    Scan a data directory for zarr datasets and return a mapping.
-
-    Searches for pattern: `data_root/*/dataset.zarr`
-
-    Parameters
-    ----------
-    data_root : str
-        Root directory containing dataset folders.
-
-    Returns
-    -------
-    dict
-        Mapping of dataset_name → list of zarr paths.
-    """
     zarr_map = {}
     search_pattern = os.path.join(data_root, "*", "*.zarr")
 
@@ -94,50 +56,27 @@ def build_zarr_map(data_root: str) -> dict:
     return zarr_map
 
 
-def get_scale_trans(base_path: str, level: str = "s0"):
-    """
-    Read scale and translation coordinate transforms from zarr .zattrs metadata.
-
-    Parameters
-    ----------
-    base_path : str
-        Path to the zarr group containing .zattrs.
-    level : str
-        Pyramid level to extract transforms for (e.g., "s0").
-
-    Returns
-    -------
-    tuple of (np.ndarray, np.ndarray)
-        (scale, translation) each of shape (3,).
-    """
+def get_scale_trans(path:str, level:str ="s0"):
     scale = np.array([1.0, 1.0, 1.0])
     trans = np.array([0.0, 0.0, 0.0])
-
+    if path is None: return scale, trans
+        
     try:
-        zattrs_path = os.path.join(base_path, ".zattrs")
-        with open(zattrs_path, "r") as f:
+        with open(f"{path}/.zattrs", 'r') as f:
             meta = json.load(f)
             multiscales = meta.get("multiscales", [{}])[0]
-
             for ds in multiscales.get("datasets", []):
                 if ds.get("path") == level:
                     for t in ds.get("coordinateTransformations", []):
-                        if t.get("type") == "scale":
-                            scale = np.array(t["scale"])
-                        if t.get("type") == "translation":
-                            trans = np.array(t["translation"])
+                        if t.get("type") == "scale": scale = np.array(t["scale"])[-3:]
+                        if t.get("type") == "translation": trans = np.array(t["translation"])[-3:]
                     return scale, trans
-
-            # Fallback: global coordinateTransformations
             if "coordinateTransformations" in multiscales:
                 for t in multiscales["coordinateTransformations"]:
-                    if t.get("type") == "scale":
-                        scale = np.array(t["scale"])
-                    if t.get("type") == "translation":
-                        trans = np.array(t["translation"])
-    except Exception as e:
-        print(f"Warning reading metadata at {base_path}: {e}")
-
+                    if t.get("type") == "scale": scale = np.array(t["scale"])[-3:]
+                    if t.get("type") == "translation": trans = np.array(t["translation"])[-3:]
+    except Exception:
+        pass
     return scale, trans
 
 
@@ -202,3 +141,47 @@ def extract_aligned_volumes(dataset_base: str, crop_id: str = "crop234", em_scal
     print(f"Extraction Complete. Final Aligned Shape: {em_volume.shape}")
 
     return em_volume, lbl_volume
+
+
+
+def select_z_slice(crop_zarr):
+    z_max = crop_zarr.shape[0]
+    return np.random.randint(0, z_max)
+
+def extract_both_patches(label_zarr, em_zarr, z_idx, lbl_scale, lbl_trans, em_trans, patch_dim=256):
+    lbl_shape = label_zarr.shape
+    y_max = max(0, lbl_shape[1] - patch_dim)
+    x_max = max(0, lbl_shape[2] - patch_dim)
+    
+    offset = np.round((lbl_trans - em_trans) / lbl_scale).astype(int)
+    z_off, y_off, x_off = offset[0], offset[1], offset[2]
+    
+    # 1. Single Random Extraction (No Retries)
+    y_start = np.random.randint(0, y_max + 1)
+    x_start = np.random.randint(0, x_max + 1)
+    
+    label_patch = label_zarr[z_idx, y_start:y_start+patch_dim, x_start:x_start+patch_dim]
+    extracted_h, extracted_w = label_patch.shape
+    
+    label_patch = label_patch.astype(np.int64)
+    
+    if extracted_h != patch_dim or extracted_w != patch_dim:
+        pad_h = patch_dim - extracted_h
+        pad_w = patch_dim - extracted_w
+        label_patch = np.pad(label_patch, ((0, pad_h), (0, pad_w)), mode='constant', constant_values=-1)
+    
+    em_z = z_idx + z_off
+    em_y_start = y_start + y_off
+    em_y_end = em_y_start + patch_dim
+    em_x_start = x_start + x_off
+    em_x_end = em_x_start + patch_dim
+    
+    em_patch = em_zarr[em_z, em_y_start:em_y_end, em_x_start:em_x_end]
+    
+    em_h, em_w = em_patch.shape
+    if em_h != patch_dim or em_w != patch_dim:
+        pad_h = patch_dim - em_h
+        pad_w = patch_dim - em_w
+        em_patch = np.pad(em_patch, ((0, pad_h), (0, pad_w)), mode='constant', constant_values=0)
+            
+    return label_patch, em_patch

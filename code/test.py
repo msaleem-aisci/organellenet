@@ -18,6 +18,10 @@ if _PROJECT_ROOT not in sys.path:
 
 from code.utils.config import load_config
 from data.splits import split_handler
+from data.zarr_utils import build_zarr_map, select_z_slice, extract_both_patches
+from data.dataset import MISO2DDataset
+from data.sampler import create_rfs_sampler 
+
 
 def parse_args():
 
@@ -35,34 +39,24 @@ def main():
     cfg = load_config(args.config)
     root_dir = cfg.path.root_dir
     split_paths = split_handler(cfg.path.blueprint_json, root_dir)
-    print(split_paths)
+
+
+    ZARR_MAP = build_zarr_map(root_dir)
+
+    train_dataset = MISO2DDataset(
+        crops_json_path = split_paths['train_crops'], 
+        zarr_map = ZARR_MAP,
+    )
+
+    print(cfg.rfs_weights)
     sys.exit(0)
-    # 3. Print the verified schemas
-    # Because we used @dataclass in config.py, Python automatically formats 
-    # the print statements cleanly without needing custom formatting logic.
-    print("=" * 60)
-    print(f"=== EXPERIMENT: {cfg.experiment_name.upper()} ===")
-    print("=" * 60)
-    
-    print("\n[PATH CONFIGURATION]")
-    print(cfg.path.root_dir)
-    
-    print("\n[DATA CONFIGURATION]")
-    print(cfg.data)
-    
-    print("\n[MODEL CONFIGURATION]")
-    print(cfg.model)
-    
-    print("\n[TRAINING CONFIGURATION]")
-    print(cfg.training)
-    
-    print("\n[SEMANTIC MAP CLASSES DETECTED]")
-    print(f"Total target classes defined: {len(cfg.semantic_map.keys())}")
-    print("=" * 60)
+    train_sampler = create_rfs_sampler()
 
 
-    print(cfg.semantic_map)
 
+    
+    
+   
 if __name__ == "__main__":
     main()
 

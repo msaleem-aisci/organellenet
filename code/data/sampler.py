@@ -99,5 +99,22 @@ def create_balanced_sampler(dataset, balance_level: str = "raw") -> WeightedRand
 
     return sampler
 
-def sampler_test():
-    return "hello from sampler"
+
+def create_rfs_sampler(crops_list, rfs_weights_dict, num_samples=32000)-> WeightedRandomSampler:
+
+    sample_weights = []
+    for crop_meta in crops_list:
+        crop_id = crop_meta["crop"]
+        weight = rfs_weights_dict.get(crop_id, 1.0)
+        sample_weights.append(weight)
+        
+    # Convert to PyTorch sampler
+    weights_tensor = torch.DoubleTensor(sample_weights)
+    
+    sampler = WeightedRandomSampler(
+        weights=weights_tensor, 
+        num_samples=num_samples,
+        replacement=True
+    )
+    
+    return sampler

@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 import json
@@ -34,7 +32,6 @@ def split_handler(blueprint_json_path: str, root_dir: str) -> dict:
         'crop275', 'crop217', 'crop346', 'crop38',  'crop42', 'crop247'
     }
 
-    print(f"Loading master blueprint from: {blueprint_json_path}")
     with open(blueprint_json_path, 'r') as f:
         blueprint = json.load(f)
 
