@@ -100,7 +100,7 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         data=DataConfig(**raw["data"]),
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
-        semantic_map=raw["semantic_map"]
+        semantic_map=raw["semantic_map"],
         name= raw["name"]
     )
 
