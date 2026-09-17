@@ -54,7 +54,7 @@ def main():
    
     sys.exit(0)
     with open(rfs_weights_path, 'r') as f:
-    rfs_weights = json.load(f)
+        rfs_weights = json.load(f)
 
     train_sampler = create_rfs_sampler()
 
