@@ -1,60 +1,45 @@
-# ============================================================================
-# OrganelleNet — Base Configuration (Shared Defaults)
-# ============================================================================
-# All experiment configs inherit from this file via `inherits: base.yaml`.
-# Override only the parameters that differ per experiment.
+experiment_name: "2D Optimal"
 
-experiment_name: unnamed-experiment
-
-paths:
-  main_dir: /kaggle/working/organellenet
-  data_dir: /kaggle/working/data
+path:
+  root_dir: "/kaggle/input/" 
+  blueprint_json: ""   
+  RFS_weights: ""   
+  train_crops_json: "train_crops.json"
+  val_crops_json: "val_crops.json"
+  test_crops_json: "test_crops.json"
+  checkpoint_dir: "checkpoints"
 
 data:
-  patch_dim: 128
-  max_jitter: 0
-  seed: 42
-  num_classes: 13
-  target_classes:
-    - endo
-    - ld
-    - lyso
-    - mito
-    - mt
-    - np
-    - nuc
-    - perox
-    - ves
-    - golgi
-    - er
-    - eres
-  blueprint_json: static_dynamic_baseline.json
-  split_ratios: [0.80, 0.10, 0.10]
-  excluded_crop: null
+  patch_dim: 256
+  samples: 64000
+  batch_size: 64
+  num_workers: 4
 
 model:
-  spatial_dims: 3
+  spatial_dims: 2
   in_channels: 1
   out_channels: 13
   channels: [64, 128, 256, 512, 1024]
   strides: [2, 2, 2, 2]
-  kernel_size: 3
-  up_kernel_size: 3
-  num_res_units: 2
-  act: PRELU
-  norm: INSTANCE
 
 training:
-  batch_size: 4
-  lr: 0.0001
-  weight_decay: 0.00001
-  num_epochs: 1000
-  scheduler_patience: 5
-  scheduler_factor: 0.5
-  scheduler_mode: min
-  early_stop_patience: 12
-  early_stop_metric: val_dice
-  accumulation_steps: 1
-  print_freq: 1
-  num_workers: 2
-  class_weights: null   # null = use defaults from config.py
+  num_epochs: 60
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  warmup_epochs: 5
+  mixed_precision: true
+
+semantic_map:
+  0: [35, 1]                                           # Background
+  1: [50, 3, 4, 5]                                     # Mitochondria
+  2: [8, 9]                                            # Vesicles
+  3: [10, 11]                                          # Endosomes
+  4: [12, 13]                                          # Lysosomes
+  5: [44, 14, 15]                                      # Lipid Droplets
+  6: [37, 20, 21, 26, 24, 25, 27, 28, 29]              # Nucleus
+  7: [22, 23]                                          # Nuclear Pores
+  8: [30, 36]                                          # Microtubules
+  9: [49, 47, 48]                                      # Peroxisomes
+  10: [6, 7]                                           # Golgi Apparatus
+  11: [16, 17, 64]                                     # Endoplasmic Reticulum
+  12: [18, 19]                                         # ER Exit Sites
