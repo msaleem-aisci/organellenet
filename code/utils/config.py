@@ -1,8 +1,5 @@
 """
 Configuration system for BlueMind OrganelleNet.
-
-Loads YAML config files into strict, type-enforced dataclasses.
-The YAML file acts as the absolute source of truth; Python only enforces the schema.
 """
 
 import os
@@ -18,7 +15,26 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 # ---------------------------------------------------------------------------
-# Strict Type Schemas (No default values - YAML must provide them)
+# Hardcoded Biological Constants (No longer needed in YAML)
+# ---------------------------------------------------------------------------
+SEMANTIC_MAP_13 = {
+    0: [35, 1],                                           # Background
+    1: [50, 3, 4, 5],                                     # Mitochondria
+    2: [8, 9],                                            # Vesicles
+    3: [10, 11],                                          # Endosomes
+    4: [12, 13],                                          # Lysosomes
+    5: [44, 14, 15],                                      # Lipid Droplets
+    6: [37, 20, 21, 26, 24, 25, 27, 28, 29],              # Nucleus
+    7: [22, 23],                                          # Nuclear Pores
+    8: [30, 36],                                          # Microtubules
+    9: [49, 47, 48],                                      # Peroxisomes
+    10: [6, 7],                                           # Golgi Apparatus
+    11: [16, 17, 64],                                     # Endoplasmic Reticulum
+    12: [18, 19]                                          # ER Exit Sites
+}
+
+# ---------------------------------------------------------------------------
+# Strict Type Schemas
 # ---------------------------------------------------------------------------
 @dataclass
 class PathConfig:
@@ -31,8 +47,6 @@ class PathConfig:
     checkpoint_dir: str
 
     def __post_init__(self):
-        # We still need this purely to join the paths mathematically. 
-        # YAML cannot perform os.path.join.
         if not os.path.isabs(self.checkpoint_dir):
             self.checkpoint_dir = os.path.join(self.root_dir, self.checkpoint_dir)
         if not os.path.isabs(self.train_crops_json):
@@ -42,14 +56,12 @@ class PathConfig:
         if not os.path.isabs(self.test_crops_json):
             self.test_crops_json = os.path.join(self.root_dir, self.test_crops_json)
 
-
 @dataclass
 class DataConfig:
     patch_dim: int
     samples: int
     batch_size: int
     num_workers: int
-
 
 @dataclass
 class ModelConfig:
@@ -58,7 +70,6 @@ class ModelConfig:
     out_channels: int
     channels: List[int]
     strides: List[int]
-
 
 @dataclass
 class TrainingConfig:
@@ -74,7 +85,6 @@ class ArchConfig:
     swin: int
     resnet: int
 
-
 @dataclass
 class ExperimentConfig:
     experiment_name: str
@@ -82,10 +92,11 @@ class ExperimentConfig:
     data: DataConfig
     model: ModelConfig
     training: TrainingConfig
-    semantic_map: Dict[int, List[int]]
-    name: str
-    architectures: ArchConfig
+ 
 
+    # We use default_factory to automatically load the Python dictionary.
+    # It will be universally applied to every experiment.
+    semantic_map: Dict[int, List[int]] = field(default_factory=lambda: SEMANTIC_MAP_13)
 
 # ---------------------------------------------------------------------------
 # YAML Loading with Inheritance
@@ -107,31 +118,22 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         data=DataConfig(**raw["data"]),
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
-        semantic_map=raw["semantic_map"],
-        name= raw["name"],
-        architectures= ArchConfig(**raw["architectures"])
-        
+     
+
     )
 
 def load_config(config_path: str) -> ExperimentConfig:
-
-
     config_path = os.path.abspath(config_path)
-    
     config_dir = os.path.dirname(config_path)
-    
+
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f) or {}
 
     parent_file = raw.pop("inherits", None)
-
-
-    
     if parent_file:
         parent_path = os.path.join(config_dir, parent_file) if not os.path.isabs(parent_file) else parent_file
         with open(parent_path, "r") as f:
             parent_raw = yaml.safe_load(f) or {}
-
         parent_raw.pop("inherits", None)
         raw = _deep_merge(parent_raw, raw)
 

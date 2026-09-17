@@ -28,24 +28,3 @@ training:
   weight_decay: 0.0001
   warmup_epochs: 5
   mixed_precision: true
-
-semantic_map:
-  0: [35, 1]                                           # Background
-  1: [50, 3, 4, 5]                                     # Mitochondria
-  2: [8, 9]                                            # Vesicles
-  3: [10, 11]                                          # Endosomes
-  4: [12, 13]                                          # Lysosomes
-  5: [44, 14, 15]                                      # Lipid Droplets
-  6: [37, 20, 21, 26, 24, 25, 27, 28, 29]              # Nucleus
-  7: [22, 23]                                          # Nuclear Pores
-  8: [30, 36]                                          # Microtubules
-  9: [49, 47, 48]                                      # Peroxisomes
-  10: [6, 7]                                           # Golgi Apparatus
-  11: [16, 17, 64]                                     # Endoplasmic Reticulum
-  12: [18, 19]                                         # ER Exit Sites
-
-
-architectures:
-  unet: 2
-  swin: 1
-  resnet: 3
