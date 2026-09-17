@@ -103,6 +103,9 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
     )
 
 def load_config(config_path: str) -> ExperimentConfig:
+    print(config_path)
+
+    
     config_path = os.path.abspath(config_path)
     config_dir = os.path.dirname(config_path)
 

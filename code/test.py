@@ -19,24 +19,20 @@ if _PROJECT_ROOT not in sys.path:
 from code.utils.config import load_config
 
 def parse_args():
-    """Parses command-line arguments."""
+
     parser = argparse.ArgumentParser(description="Train BlueMind OrganelleNet")
-    parser.add_argument(
-        "--config", 
-        type=str, 
-        required=True, 
-        help="Path to the YAML configuration file (e.g., configs/base.yml)"
-    )
+    parser.add_argument("--config", type=str, required=True, help="Path to the YAML configuration file (e.g., configs/base.yml)")
+    
     return parser.parse_args()
 
 def main():
-    # 1. Parse terminal command
+
     args = parse_args()
     
     # 2. Load the configuration
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
-    
+    sys.exit(0)
     # 3. Print the verified schemas
     # Because we used @dataclass in config.py, Python automatically formats 
     # the print statements cleanly without needing custom formatting logic.
