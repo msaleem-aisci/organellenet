@@ -114,7 +114,10 @@ def load_config(config_path: str) -> ExperimentConfig:
 
     parent_file = raw.pop("inherits", None)
 
-    print(f"parent file path: {os.path.join(config_dir, parent_file)}")
+    abspath = os.path.join(config_dir, parent_file)
+    if os.path.isabs(abspath):
+        print("yes")
+
 
     
     if parent_file:
