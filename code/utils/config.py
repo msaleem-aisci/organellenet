@@ -114,16 +114,13 @@ def load_config(config_path: str) -> ExperimentConfig:
 
     parent_file = raw.pop("inherits", None)
 
-    abspath = os.path.join(config_dir, parent_file)
-    if os.path.isabs(abspath):
-        print("yes")
-
 
     
     if parent_file:
         parent_path = os.path.join(config_dir, parent_file) if not os.path.isabs(parent_file) else parent_file
         with open(parent_path, "r") as f:
             parent_raw = yaml.safe_load(f) or {}
+            
         parent_raw.pop("inherits", None)
         raw = _deep_merge(parent_raw, raw)
 
