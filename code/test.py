@@ -96,12 +96,49 @@ def main():
     print(f"Train Loader: {len(train_dataloader)}")
     print(f"Val Loader: {len(val_dataloader)}")
 
+
     
-    for batch_idx, (em_tensors, label_tensors) in enumerate(train_dataloader):
-        print(f"Batch {batch_idx + 1}")
-        print(f"EM Tensor Shape:    {em_tensors.shape}  | Dtype: {em_tensors.dtype}")
-        print(f"Label Tensor Shape: {label_tensors.shape} | Dtype: {label_tensors.dtype}")
-        break # Test only the first batch
+
+    for batch_idx, (em_batch, lbl_batch) in enumerate(train_dataloader):
+        print(f"EM Batch Shape:    {em_batch.shape} | Type: {em_batch.dtype}")
+        print(f"Label Batch Shape: {lbl_batch.shape} | Type: {lbl_batch.dtype}")
+
+        # Extract the second item in the batch
+        em_tensor = em_batch[1]
+        lbl_tensor = lbl_batch[1]
+        print(f"em_tensor {em_tensor.shape}")
+        break
+
+    # Convert to 2D numpy arrays: (128, 128)
+    em_single = em_tensor.squeeze(0).numpy()
+    lbl_single = lbl_tensor.numpy()
+
+    patch_dim = 128
+    mid_pt = patch_dim // 2
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6), facecolor='black')
+
+    # Plot entire 2D patch
+    axes[0].imshow(em_single, cmap='gray')
+    axes[0].set_title("EM Patch (2D)", color='white')
+    axes[0].axis('off')
+
+    # Handle the -1 ignore index for visualization (map to 0)
+    visual_lbl = np.where(lbl_single == -1, 0, lbl_single)
+    axes[1].imshow(visual_lbl, cmap='nipy_spectral', interpolation='nearest')
+    axes[1].set_title("Label Patch (2D)", color='white')
+    axes[1].axis('off')
+
+    # Apply crosshairs at the spatial center of the 2D plane
+    for ax in axes:
+        ax.axhline(mid_pt, color='blue', linestyle='-', linewidth=1)
+        ax.axvline(mid_pt, color='blue', linestyle='-', linewidth=1)
+
+    output_image_path = "/kaggle/working/debug_batch.png"
+    plt.savefig(output_image_path, dpi=300, bbox_inches='tight', facecolor='black')
+    plt.close(fig) 
+
+    print(f"Visualization saved to {output_image_path}")
 
 
 
