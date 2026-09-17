@@ -78,6 +78,7 @@ class ExperimentConfig:
     training: TrainingConfig
     semantic_map: Dict[int, List[int]]
     name: str
+    architectures: list
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +102,8 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
         semantic_map=raw["semantic_map"],
-        name= raw["name"]
+        name= raw["name"],
+        architectures= raw["architectures"]
     )
 
 def load_config(config_path: str) -> ExperimentConfig:

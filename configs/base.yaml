@@ -43,3 +43,9 @@ semantic_map:
   10: [6, 7]                                           # Golgi Apparatus
   11: [16, 17, 64]                                     # Endoplasmic Reticulum
   12: [18, 19]                                         # ER Exit Sites
+
+
+architectures:
+  - unet
+  - resnet
+  - swin 

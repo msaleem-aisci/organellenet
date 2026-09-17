@@ -57,7 +57,7 @@ def main():
     print("=" * 60)
 
 
-    print(cfg.name)
+    print(cfg.architectures)
 
 if __name__ == "__main__":
     main()
