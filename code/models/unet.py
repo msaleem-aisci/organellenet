@@ -10,6 +10,7 @@ import os
 import torch
 import torch.nn as nn
 from monai.networks.nets import UNet
+from monai.networks.layers import Norm
 
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_THIS_DIR, "..", ".."))
