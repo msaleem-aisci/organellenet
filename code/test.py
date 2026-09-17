@@ -86,18 +86,22 @@ def main():
         prefetch_factor=2,
         pin_memory=True
     )
-    val_dataloader = DataLoader(
-        val_dataset, 
-        batch_size=64, 
-        num_workers=4,
-        shuffle=False,    
-        prefetch_factor=2,
-        pin_memory=True
-    )
+    # val_dataloader = DataLoader(
+    #     val_dataset, 
+    #     batch_size=64, 
+    #     num_workers=4,
+    #     shuffle=False,    
+    #     prefetch_factor=2,
+    #     pin_memory=True
+    # )
 
+    model, device = build_model(cfg)
     criterion = build_loss(cfg)
+    print(model)
 
-    
+
+
+
 
 
 
