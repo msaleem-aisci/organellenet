@@ -58,7 +58,7 @@ def main():
         zarr_map = ZARR_MAP,
     )
 
-    print(train_dataset.crops)
+    print(f"crops: {train_dataset.crops}")
     sys.exit(0)
     train_sampler = create_rfs_sampler()
 
