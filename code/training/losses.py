@@ -1,70 +1,154 @@
 """
-Loss function factory for OrganelleNet.
+Loss function factory for BlueMind OrganelleNet.
+Contains the custom BCE + Tversky loss with EMA Entropy Masking.
 """
 
-import sys
 import os
+import sys
 import torch
 import torch.nn as nn
-from monai.losses import DiceCELoss
+import torch.nn.functional as F
 
+# ---------------------------------------------------------------------------
+# Project root resolution
+# ---------------------------------------------------------------------------
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_THIS_DIR, "..", ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 
-class BoundaryWeightedMSELoss(nn.Module):
-    def __init__(self, boundary_weight=10.0, threshold=0.95):
+# ---------------------------------------------------------------------------
+# 1. Corrected BCE Function (AMP Safe)
+# ---------------------------------------------------------------------------
+def bce_loss_fn(logits, targets_one_hot, valid_mask, smooth=1e-6):
+    mask = valid_mask.unsqueeze(1)
+    
+    # Use with_logits for safe autocast execution
+    bce_raw = F.binary_cross_entropy_with_logits(logits, targets_one_hot, reduction='none')
+    bce_masked = bce_raw * mask
+    
+    num_classes = logits.shape[1]
+    return bce_masked.sum() / (mask.sum() * num_classes + smooth)
+
+
+# ---------------------------------------------------------------------------
+# 2. Corrected Tversky Function
+# ---------------------------------------------------------------------------
+def tversky_loss_fn(probs, targets_one_hot, valid_mask, alpha, beta, smooth=1e-6):
+    probs_flat = probs.view(probs.size(0), probs.size(1), -1)
+    targets_flat = targets_one_hot.view(targets_one_hot.size(0), targets_one_hot.size(1), -1)
+    
+    # Flatten mask and broadcast across the class dimension
+    mask_flat = valid_mask.view(valid_mask.size(0), 1, -1)
+    
+    # Apply the weight multipliers directly to the overlap terms
+    TruePos = (mask_flat * probs_flat * targets_flat).sum(dim=2)
+    FalsePos = (mask_flat * (1 - targets_flat) * probs_flat).sum(dim=2)
+    FalseNeg = (mask_flat * targets_flat * (1 - probs_flat)).sum(dim=2)
+    
+    tversky_index = (TruePos + smooth) / (TruePos + alpha * FalsePos + beta * FalseNeg + smooth)
+    
+    return 1.0 - tversky_index.mean()
+
+
+# ---------------------------------------------------------------------------
+# 3. EMA Entropy Masking (With Memory Graph Fix)
+# ---------------------------------------------------------------------------
+class EMAEntropyMasking(nn.Module):
+    def __init__(self, warmup_epochs=5, ema_momentum=0.95):
         super().__init__()
-        self.boundary_weight = boundary_weight
-        self.threshold = threshold
+        self.warmup_epochs = warmup_epochs
+        self.ema_momentum = ema_momentum
+        self.register_buffer("tau_low", torch.tensor(-1.0))
+        self.register_buffer("tau_high", torch.tensor(-1.0))
 
-    def forward(self, pred, target):
-        mse = torch.nn.functional.mse_loss(pred, target, reduction='none')
-        weight_mask = torch.ones_like(target)
-        weight_mask[torch.abs(target) < self.threshold] = self.boundary_weight
-        return (mse * weight_mask).mean()
+    def forward(self, probs, valid_mask, current_epoch):
+        if current_epoch < self.warmup_epochs:
+            return valid_mask.float()
+
+        # CRITICAL FIX: Detach probabilities to prevent memory explosion at warmup end
+        p_detached = probs.detach()
+        p_safe = torch.clamp(p_detached, 1e-6, 1.0 - 1e-6)
+        
+        pixel_entropy = -(p_safe * torch.log(p_safe) + (1.0 - p_safe) * torch.log(1.0 - p_safe))
+        mean_entropy = pixel_entropy.mean(dim=1)
+
+        valid_entropy_vals = mean_entropy[valid_mask]
+
+        if valid_entropy_vals.numel() > 0 and self.training:
+            batch_tau_low = torch.quantile(valid_entropy_vals, 0.30)
+            batch_tau_high = torch.quantile(valid_entropy_vals, 0.90)
+
+            if self.tau_low.item() < 0:
+                self.tau_low.copy_(batch_tau_low)
+                self.tau_high.copy_(batch_tau_high)
+            else:
+                self.tau_low.copy_(self.ema_momentum * self.tau_low + (1.0 - self.ema_momentum) * batch_tau_low)
+                self.tau_high.copy_(self.ema_momentum * self.tau_high + (1.0 - self.ema_momentum) * batch_tau_high)
+
+        weights = torch.ones_like(mean_entropy)
+
+        if self.tau_low.item() >= 0:
+            weights[mean_entropy >= self.tau_high] = 0.0
+            informative_mask = (mean_entropy >= self.tau_low) & (mean_entropy < self.tau_high)
+            weights[informative_mask] = 1.5
+
+        return valid_mask.float() * weights
 
 
+# ---------------------------------------------------------------------------
+# 4. Main BCE + Tversky Wrapper
+# ---------------------------------------------------------------------------
+class BCE_Tversky(nn.Module):
+    def __init__(self, alpha=0.3, beta=0.7, smooth=1e-6, ignore_index=-1, warmup_epochs=5, ema_momentum=0.95):
+        super().__init__()
+        self.alpha = alpha
+        self.beta = beta
+        self.smooth = smooth
+        self.ignore_index = ignore_index
+        
+        self.entropy_masker = EMAEntropyMasking(warmup_epochs=warmup_epochs, ema_momentum=ema_momentum)
+
+    def forward(self, logits, targets, current_epoch): 
+        num_classes = logits.shape[1]
+        
+        valid_mask = (targets != self.ignore_index)
+        safe_targets = targets.clone()
+        safe_targets[~valid_mask] = 0
+
+        targets_one_hot = F.one_hot(safe_targets, num_classes=num_classes).permute(0, 3, 1, 2).float()
+        probs = torch.sigmoid(logits)
+        
+        weighted_mask = self.entropy_masker(probs, valid_mask, current_epoch)
+     
+        # Pass 'logits' to BCE, keep 'probs' for Tversky
+        bce = bce_loss_fn(logits, targets_one_hot, weighted_mask, self.smooth)
+        tversky = tversky_loss_fn(probs, targets_one_hot, weighted_mask, self.alpha, self.beta, self.smooth)
+        
+        return bce + tversky
+
+
+# ---------------------------------------------------------------------------
+# 5. Factory Function
+# ---------------------------------------------------------------------------
 def build_loss(config, device=None):
     """
-    Build a Loss function from an ExperimentConfig.
-
-    Parameters
-    ----------
-    config : ExperimentConfig
-        Experiment configuration.
-    device : torch.device, optional
-        Device to place the class weight tensor on.
-
-    Returns
-    -------
-    nn.Module
-        The loss function.
+    Builds the loss function using parameters defined in the YAML config.
     """
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    loss_type = getattr(config.training, "loss_type", "dice_ce")
+    # Extract warmup epochs from config, default to 5 if missing
+    warmup = getattr(config.training, "warmup_epochs", 5)
 
-    if loss_type == "mse":
-        criterion = BoundaryWeightedMSELoss(boundary_weight=10.0, threshold=0.95)
-        print(f"Loss: BoundaryWeightedMSELoss (Weight: 10.0 | for SDT Regression)")
-        return criterion
-    elif loss_type == "smooth_l1":
-        criterion = torch.nn.SmoothL1Loss()
-        print(f"Loss: SmoothL1Loss (for Regression)")
-        return criterion
-    else:
-        weights = torch.tensor(config.training.class_weights, dtype=torch.float32).to(device)
-
-        criterion = DiceCELoss(
-            to_onehot_y=True,
-            softmax=True,
-            include_background=False,
-            weight=weights,
-        )
-
-        print(f"Loss: DiceCELoss | Class weights: {len(config.training.class_weights)} classes")
-        return criterion
+    criterion = BCE_Tversky(
+        alpha=0.3, 
+        beta=0.7, 
+        ignore_index=-1, 
+        warmup_epochs=warmup
+    )
+    
+    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Device: {device}")
+    
+    return criterion.to(device)
