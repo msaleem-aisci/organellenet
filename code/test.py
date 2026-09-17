@@ -48,7 +48,8 @@ def main():
         zarr_map = ZARR_MAP,
     )
 
-    print(cfg.rfs_weights)
+    rfs_weights_path = os.path.join(root_dir, cfg.rfs_weights)
+    print(cfg.rfs_weights_path)
     sys.exit(0)
     train_sampler = create_rfs_sampler()
 
