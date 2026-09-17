@@ -13,7 +13,11 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 
+
 def split_handler(blueprint_json_path: str, output_dir: str) -> dict:
+
+    print(f"path: {blueprint_json_path}")
+    sys.exit(0)
 
     os.makedirs(output_dir, exist_ok=True)
 

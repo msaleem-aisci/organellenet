@@ -17,6 +17,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from code.utils.config import load_config
+from data.splits import split_handler
 
 def parse_args():
 
@@ -32,7 +33,8 @@ def main():
     # 2. Load the configuration
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
-
+    
+    # split_handler(cfg.path.blueprint_json, )
     print(cfg.path.blueprint_json)
     sys.exit(0)
     # 3. Print the verified schemas
