@@ -5,6 +5,7 @@ Main training entry point for BlueMind OrganelleNet.
 import os
 import sys
 import argparse
+import json
 
 # ---------------------------------------------------------------------------
 # Project root resolution
@@ -49,8 +50,12 @@ def main():
     )
 
     rfs_weights_path = os.path.join(root_dir, cfg.rfs_weights)
-    print(cfg.rfs_weights_path)
+    print(rfs_weights_path)
+   
     sys.exit(0)
+    with open(rfs_weights_path, 'r') as f:
+    rfs_weights = json.load(f)
+
     train_sampler = create_rfs_sampler()
 
 
