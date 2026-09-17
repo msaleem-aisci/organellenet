@@ -77,6 +77,7 @@ class ExperimentConfig:
     model: ModelConfig
     training: TrainingConfig
     semantic_map: Dict[int, List[int]]
+    name: str
 
 
 # ---------------------------------------------------------------------------
@@ -100,6 +101,7 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
         semantic_map=raw["semantic_map"]
+        name= raw["name"]
     )
 
 def load_config(config_path: str) -> ExperimentConfig:
@@ -120,7 +122,7 @@ def load_config(config_path: str) -> ExperimentConfig:
         parent_path = os.path.join(config_dir, parent_file) if not os.path.isabs(parent_file) else parent_file
         with open(parent_path, "r") as f:
             parent_raw = yaml.safe_load(f) or {}
-            
+
         parent_raw.pop("inherits", None)
         raw = _deep_merge(parent_raw, raw)
 
