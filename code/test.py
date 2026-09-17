@@ -17,7 +17,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from code.utils.config import load_config
-# from data.splits import split_handler
+from data.splits import split_handler
 
 def parse_args():
 
