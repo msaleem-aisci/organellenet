@@ -51,16 +51,21 @@ def main():
   
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
    
-    with open(split_paths['train_crops'], 'r') as f:
-        train_crops_json = json.load(f)
-
     with open(rfs_weights_path, 'r') as f:
         rfs_weights_json = json.load(f)
+
+
 
     train_dataset = MISO2DDataset(
         crops_json_path = split_paths['train_crops'], 
         zarr_map = ZARR_MAP,
     )
+
+    val_dataset = MISO2DDataset(
+        crops_json_path = split_paths['val_crops'], 
+        zarr_map = ZARR_MAP,
+    )
+
 
 
     train_sampler = create_rfs_sampler(
@@ -77,9 +82,21 @@ def main():
         prefetch_factor=2,
         pin_memory=True
     )
+    val_dataloader = DataLoader(
+        val_dataset, 
+        batch_size=64, 
+        num_workers=4,
+        shuffle=False,    
+        prefetch_factor=2,
+        pin_memory=True
+    )
 
     # Optional: Quick loop test to verify tensor output shapes
     print("--- DataLoader Pipeline Test ---")
+    print(f"Train Loader: {len(train_dataloader)}")
+    print(f"Val Loader: {len(val_dataloader)}")
+
+    
     for batch_idx, (em_tensors, label_tensors) in enumerate(train_dataloader):
         print(f"Batch {batch_idx + 1}")
         print(f"EM Tensor Shape:    {em_tensors.shape}  | Dtype: {em_tensors.dtype}")
