@@ -52,10 +52,14 @@ def main():
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
  
    
-    with open(rfs_weights_path, 'r') as f:
-        rfs_weights = json.load(f)
+    with open(split_paths['train_crops'], 'r') as f:
+        train_crops_json = json.load(f)
 
-    print(rfs_weights)
+    
+    with open(rfs_weights_path, 'r') as f:
+        rfs_weights_json = json.load(f)
+
+    print(train_crops_json)
     sys.exit(0)
     train_sampler = create_rfs_sampler()
 
