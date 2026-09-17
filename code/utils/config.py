@@ -103,11 +103,12 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
     )
 
 def load_config(config_path: str) -> ExperimentConfig:
-    print(config_path)
 
-    
+
     config_path = os.path.abspath(config_path)
+    print(f"path {config_path}")
     config_dir = os.path.dirname(config_path)
+    print(f"dir {config_dir}")
 
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f) or {}
