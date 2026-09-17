@@ -33,6 +33,8 @@ def main():
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
 
+    print(cfg.path.blueprint_json)
+    sys.exit(0)
     # 3. Print the verified schemas
     # Because we used @dataclass in config.py, Python automatically formats 
     # the print statements cleanly without needing custom formatting logic.

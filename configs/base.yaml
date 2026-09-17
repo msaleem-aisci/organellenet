@@ -2,7 +2,7 @@ experiment_name: "2D Optimal"
 
 path:
   root_dir: "/kaggle/input/" 
-  blueprint_json: ""   
+  blueprint_json: "latest_baseline_centroids.json"   
   RFS_weights: ""   
   train_crops_json: "train_crops.json"
   val_crops_json: "val_crops.json"
