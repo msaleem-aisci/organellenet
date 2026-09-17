@@ -41,7 +41,7 @@ def main():
     print("=" * 60)
     
     print("\n[PATH CONFIGURATION]")
-    print(cfg.path)
+    print(cfg.path.PathConfig)
     
     print("\n[DATA CONFIGURATION]")
     print(cfg.data)
