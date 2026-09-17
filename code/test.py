@@ -46,7 +46,7 @@ def main():
     split_paths = split_handler(cfg.path.jsons, root_dir)
 
 
-    ZARR_MAP = build_zarr_map(root_dir)
+    ZARR_MAP = build_zarr_map(cfg.path.dataset)
 
   
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)

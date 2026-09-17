@@ -5,7 +5,8 @@ rfs_weights: "rfs_weights.json"
 
 path:
   root_dir: "/kaggle/working/organellenet" 
-  jsons: ""   
+  jsons: ""
+  dataset: "/kaggle/working/data"
   train_crops_json: "train_crops.json"
   val_crops_json: "val_crops.json"
   test_crops_json: "test_crops.json"

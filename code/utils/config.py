@@ -65,10 +65,12 @@ SEMANTIC_MAP_13 ={
 class PathConfig:
     root_dir: str
     jsons: str
+    dataset: str
     train_crops_json: str
     val_crops_json: str
     test_crops_json: str
     checkpoint_dir: str
+
 
     def __post_init__(self):
         if not os.path.isabs(self.checkpoint_dir):
