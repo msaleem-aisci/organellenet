@@ -32,7 +32,7 @@ def main():
     # 2. Load the configuration
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
-    sys.exit(0)
+
     # 3. Print the verified schemas
     # Because we used @dataclass in config.py, Python automatically formats 
     # the print statements cleanly without needing custom formatting logic.
@@ -55,6 +55,9 @@ def main():
     print("\n[SEMANTIC MAP CLASSES DETECTED]")
     print(f"Total target classes defined: {len(cfg.semantic_map.keys())}")
     print("=" * 60)
+
+
+    print(cfg.name)
 
 if __name__ == "__main__":
     main()
