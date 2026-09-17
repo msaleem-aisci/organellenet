@@ -64,8 +64,7 @@ SEMANTIC_MAP_13 ={
 @dataclass
 class PathConfig:
     root_dir: str
-    blueprint_json: str
-    RFS_weights: str
+    jsons: str
     train_crops_json: str
     val_crops_json: str
     test_crops_json: str
@@ -80,8 +79,8 @@ class PathConfig:
             self.val_crops_json = os.path.join(self.root_dir, self.val_crops_json)
         if not os.path.isabs(self.test_crops_json):
             self.test_crops_json = os.path.join(self.root_dir, self.test_crops_json)
-        if not os.path.isabs(self.blueprint_json):
-            self.blueprint_json = os.path.join(self.root_dir, 'all_jsons')
+        if not os.path.isabs(self.jsons):
+            self.jsons = os.path.join(self.root_dir, 'all_jsons')
 
 @dataclass
 class DataConfig:
@@ -147,7 +146,7 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         data=DataConfig(**raw["data"]),
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
-        blueprint_json = raw['blueprint_json'],
+        jsons = raw['jsons'],
         rfs_weights= raw['rfs_weights']
      
 

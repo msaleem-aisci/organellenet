@@ -39,7 +39,7 @@ def main():
     print(f"Loading configuration from: {args.config}...\n")
     cfg = load_config(args.config)
     root_dir = cfg.path.root_dir
-    split_paths = split_handler(cfg.path.blueprint_json, root_dir)
+    split_paths = split_handler(cfg.path.jsons, root_dir)
 
 
     ZARR_MAP = build_zarr_map(root_dir)
@@ -49,7 +49,7 @@ def main():
         zarr_map = ZARR_MAP,
     )
 
-    rfs_weights_path = os.path.join(root_dir, cfg.rfs_weights)
+    rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
     print(rfs_weights_path)
    
     sys.exit(0)
