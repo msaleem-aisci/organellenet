@@ -112,11 +112,7 @@ def load_config(config_path: str) -> ExperimentConfig:
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f) or {}
 
-    print(f"Raw YAML: {raw}")
-
     parent_file = raw.pop("inherits", None)
-
-    print(f"parent file: {parent_file}")
 
     
     if parent_file:
