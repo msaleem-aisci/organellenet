@@ -118,7 +118,6 @@ class ExperimentConfig:
     data: DataConfig
     model: ModelConfig
     training: TrainingConfig
-    blueprint_json: str
     rfs_weights: str
  
 
@@ -146,7 +145,6 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
         data=DataConfig(**raw["data"]),
         model=ModelConfig(**raw["model"]),
         training=TrainingConfig(**raw["training"]),
-
         rfs_weights= raw['rfs_weights']
      
 
