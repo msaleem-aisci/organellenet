@@ -106,14 +106,19 @@ def load_config(config_path: str) -> ExperimentConfig:
 
 
     config_path = os.path.abspath(config_path)
-    print(f"path {config_path}")
+    
     config_dir = os.path.dirname(config_path)
-    print(f"dir {config_dir}")
-
+    
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f) or {}
 
+    print(f"Raw YAML: {raw}")
+
     parent_file = raw.pop("inherits", None)
+
+    print(f"parent file: {parent_file}")
+
+    
     if parent_file:
         parent_path = os.path.join(config_dir, parent_file) if not os.path.isabs(parent_file) else parent_file
         with open(parent_path, "r") as f:
