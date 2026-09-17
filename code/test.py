@@ -17,6 +17,10 @@ _PROJECT_ROOT = os.path.abspath(os.path.join(_THIS_DIR, ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
+import torch
+from torch.utils.data import DataLoader
+
+
 from code.utils.config import load_config
 from data.splits import split_handler
 from data.zarr_utils import build_zarr_map, select_z_slice, extract_both_patches
