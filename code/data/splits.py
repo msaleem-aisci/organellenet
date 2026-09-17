@@ -14,12 +14,11 @@ if _PROJECT_ROOT not in sys.path:
 
 
 
-def split_handler(blueprint_json_path: str, output_dir: str) -> dict:
+def split_handler(blueprint_json_path: str, root_dir: str) -> dict:
     json_name = "latest_baseline_centroids.json"
     blueprint_json_path = os.path.join(blueprint_json_path, json_name)
-    print(f"path: {blueprint_json_path}")
-    sys.exit(0)
-
+  
+    output_dir = os.path.join(root_dir, "splits")
     os.makedirs(output_dir, exist_ok=True)
 
     # Hardcoded Anchor Crops for Guaranteed Evaluation Representation
