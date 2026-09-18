@@ -106,6 +106,8 @@ class TrainingConfig:
     weight_decay: float
     warmup_epochs: int
     mixed_precision: bool
+    early_stopping_patience: int
+    print_freq: int
 
 @dataclass
 class ArchConfig:

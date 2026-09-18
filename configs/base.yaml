@@ -31,4 +31,6 @@ training:
   weight_decay: 0.0001
   warmup_epochs: 5
   mixed_precision: true
+  early_stopping_patience: 10
+  print_freq: 50
 
