@@ -1,5 +1,6 @@
 """
 Unified modular training loop for BlueMind OrganelleNet.
+Features: AMP, 1CycleLR, Stateful Checkpointing, and robust Early Stopping.
 """
 
 import os
@@ -18,7 +19,7 @@ if _PROJECT_ROOT not in sys.path:
 
 
 class Trainer:
-    def __init__(self, model, criterion, config, device):
+    def __init__(self, model, criterion, config, device, patience=10):
         self.model = model.to(device)
         self.criterion = criterion
         self.config = config
@@ -29,6 +30,11 @@ class Trainer:
         self.lr = config.training.learning_rate
         self.weight_decay = config.training.weight_decay
         self.mixed_precision = config.training.mixed_precision
+        
+        # Early Stopping Configuration
+        # Safely pull from config if it exists, otherwise use the default passed in __init__
+        self.patience = getattr(config.training, "early_stopping_patience", patience)
+        self.patience_counter = 0
         
         # 2. Optimizer and Scaler
         self.optimizer = AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
@@ -102,19 +108,27 @@ class Trainer:
         return epoch_loss / len(dataloader)
 
     def _save_checkpoint(self, epoch, avg_val_loss, scheduler):
-        """Manages saving the latest state and tracking the best model."""
-        if avg_val_loss < self.best_val_loss:
+        """Manages saving state, tracking best model, and updating early stopping."""
+        is_best = avg_val_loss < self.best_val_loss
+        
+        if is_best:
             print(f">>> Validation loss improved from {self.best_val_loss:.4f} to {avg_val_loss:.4f}. Saving BEST model.")
             self.best_val_loss = avg_val_loss
+            self.patience_counter = 0  # Reset early stopping counter
             torch.save(self.model.state_dict(), self.best_ckpt_path)
+        else:
+            self.patience_counter += 1
+            print(f">>> No improvement in val_loss. Early Stopping Patience: {self.patience_counter}/{self.patience}")
         
+        # CRITICAL: Save the patience_counter so early stopping does not reset on resume
         checkpoint = {
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'scaler_state_dict': self.scaler.state_dict(),
             'scheduler_state_dict': scheduler.state_dict(),
-            'best_val_loss': self.best_val_loss
+            'best_val_loss': self.best_val_loss,
+            'patience_counter': self.patience_counter 
         }
         torch.save(checkpoint, self.latest_ckpt_path)
 
@@ -129,20 +143,27 @@ class Trainer:
             pct_start=0.05
         )
 
-        # 1. Resume Logic
+        # 1. Robust Resume Logic
         log_mode = "w"
         if resume and os.path.exists(self.latest_ckpt_path):
             print(f"[*] Resuming from {self.latest_ckpt_path}")
             checkpoint = torch.load(self.latest_ckpt_path, map_location=self.device, weights_only=True)
+            
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.scaler.load_state_dict(checkpoint['scaler_state_dict'])
             scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+            
             self.start_epoch = checkpoint['epoch'] + 1
             self.best_val_loss = checkpoint['best_val_loss']
+            
+            # Safely restore the early stopping state (default to 0 if from an older checkpoint)
+            self.patience_counter = checkpoint.get('patience_counter', 0)
+            
             log_mode = "a"
+            print(f"[*] Successfully restored state. Resuming at Epoch {self.start_epoch}. Current Patience: {self.patience_counter}")
         else:
-            print("[*] Starting training from scratch.")
+            print("[*] Starting training from scratch (Epoch 0).")
 
         # 2. Setup Logging
         with open(self.log_file, log_mode, newline='') as f:
@@ -170,5 +191,10 @@ class Trainer:
             # Memory Cleanup
             gc.collect()
             torch.cuda.empty_cache()
+
+            # 4. Early Stopping Trigger
+            if self.patience_counter >= self.patience:
+                print(f"\n[!] Early Stopping triggered at Epoch {epoch}. Validation loss has not improved for {self.patience} epochs.")
+                break
 
         print("\nTraining complete.")

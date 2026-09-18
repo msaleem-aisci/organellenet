@@ -98,7 +98,7 @@ def main():
 
     model, device = build_model(cfg)
     criterion = build_loss(cfg)
-    print(model)
+ 
 
     trainer = Trainer(
         model=model,
