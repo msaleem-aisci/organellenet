@@ -167,7 +167,7 @@ class Trainer:
 
         for epoch in range(self.start_epoch, self.num_epochs):
             current_lr = self.optimizer.param_groups[0]['lr']
-            print(f"\n=== Epoch [{epoch}/{self.num_epochs-1}] | Starting LR: {current_lr:.2e} ===")
+            print(f"\n=== Epoch [{epoch+1}/{self.num_epochs}] | Starting LR: {current_lr:.2e} ===")
             
             train_loss = self._train_epoch(train_dataloader, epoch, scheduler)
             val_loss = self._validate_epoch(val_dataloader, epoch)
