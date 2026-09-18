@@ -133,6 +133,7 @@ class Trainer:
         torch.save(checkpoint, self.latest_ckpt_path)
 
     def train(self, train_dataloader, val_dataloader, resume=True):
+
         """The main execution pipeline orchestrating the training lifecycle."""
         
         scheduler = OneCycleLR(
@@ -143,7 +144,7 @@ class Trainer:
             pct_start=0.05
         )
 
-        # 1. Robust Resume Logic
+        # 1. Resume Logic
         log_mode = "w"
         if resume and os.path.exists(self.latest_ckpt_path):
             print(f"[*] Resuming from {self.latest_ckpt_path}")
@@ -161,7 +162,7 @@ class Trainer:
             self.patience_counter = checkpoint.get('patience_counter', 0)
             
             log_mode = "a"
-            print(f"[*] Successfully restored state. Resuming at Epoch {self.start_epoch}. Current Patience: {self.patience_counter}")
+            print(f"[*] Successfully restored state. Resuming at Epoch {self.start_epoch}. Current Patience: {self.patience_counter} | Current Epoch:")
         else:
             print("[*] Starting training from scratch (Epoch 0).")
 
@@ -198,3 +199,8 @@ class Trainer:
                 break
 
         print("\nTraining complete.")
+    
+
+
+    def checkpoints(self):
+        print(self.checkpoint)
