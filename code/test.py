@@ -96,6 +96,7 @@ def main():
         pin_memory=True
     )
 
+    print("Dataset is completed.")
     model, device = build_model(cfg)
     criterion = build_loss(cfg)
  

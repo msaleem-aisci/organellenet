@@ -88,6 +88,7 @@ def split_handler(blueprint_json_path: str, root_dir: str) -> dict:
     with open(test_path, 'w') as f:
         json.dump(test_list, f, indent=4)
 
+    print("--> CROPS splitting completed.")
     return {
         "train_crops": train_path,
         "val_crops": val_path,
