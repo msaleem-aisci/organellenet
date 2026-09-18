@@ -31,7 +31,7 @@ from data.dataset import MISO2DDataset
 from data.sampler import create_rfs_sampler 
 from code.training.losses import build_loss
 from code.models.unet import build_model
-
+from code.training.trainer import Trainer
 
 def parse_args():
 
@@ -87,18 +87,29 @@ def main():
         prefetch_factor=2,
         pin_memory=True
     )
-    # val_dataloader = DataLoader(
-    #     val_dataset, 
-    #     batch_size=64, 
-    #     num_workers=4,
-    #     shuffle=False,    
-    #     prefetch_factor=2,
-    #     pin_memory=True
-    # )
+    val_dataloader = DataLoader(
+        val_dataset, 
+        batch_size=64, 
+        num_workers=4,
+        shuffle=False,    
+        prefetch_factor=2,
+        pin_memory=True
+    )
 
     model, device = build_model(cfg)
     criterion = build_loss(cfg)
     print(model)
+
+    trainer = Trainer(
+        model=model,
+        criterion=criterion,
+        config=cfg,
+        device=device
+    )
+
+    # Start the training loop
+    print("\n[STARTING TRAINING PIPELINE]")
+    trainer.train(train_dataloader, val_dataloader, resume=True)
 
 
 
