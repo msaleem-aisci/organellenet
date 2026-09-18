@@ -76,7 +76,7 @@ def main():
     train_sampler = create_rfs_sampler(
         crops_list=train_dataset.crops, 
         rfs_weights_dict= rfs_weights_json, 
-        num_samples=8000  
+        num_samples=64000  
     )
 
     train_dataloader = DataLoader(
