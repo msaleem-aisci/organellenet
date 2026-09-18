@@ -18,7 +18,7 @@ if _PROJECT_ROOT not in sys.path:
 
 
 class Trainer:
-    def __init__(self, model, criterion, config, device, paths):
+    def __init__(self, model, criterion, config, device):
         self.model = model.to(device)
         self.criterion = criterion
         self.config = config
