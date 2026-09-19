@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--num_epochs", type=int, default=None, help="Number of epochs.")
     parser.add_argument("--samples", type=int, default=None, help="Number of epochs.")
     parser.add_argument("--batch_size", type=int, default=None, help="Batch size")
-    parser.add_argument("--early_stopping_patience", type=int, default=None, help="Early stopping")
+
     return parser.parse_args()
 
 def main():
@@ -58,7 +58,7 @@ def main():
     cfg.training.num_epochs = args.num_epochs
     cfg.data.samples = args.samples
     cfg.data.batch_size = args.batch_size
-    cfg.training.early_stopping_patience = args.early_stopping_patience
+
 
 
     root_dir = cfg.path.root_dir
