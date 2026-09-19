@@ -26,7 +26,7 @@ from code.data.augmentations import apply_augmentations
 
 
 class MISO2DDataset(Dataset):
-    def __init__(self, crops_json_path, zarr_map, patch_dim=256):
+    def __init__(self, crops_json_path, zarr_map, class_map, patch_dim=256):
         self.patch_dim = patch_dim
         self.zarr_map = zarr_map
         
@@ -45,48 +45,7 @@ class MISO2DDataset(Dataset):
             
         print(f"Loaded {len(self.crops)} valid crops. Excluded {len(all_crops) - len(self.crops)} empty crops.")
             
-        semantic_to_instance_map = {
-            # 1. Mitochondria
-            50: 1, 3: 1, 4: 1, 5: 1,
-            
-            # 2. Vesicles
-            8: 2, 9: 2,
-            
-            # 3. Endosomes
-            10: 3, 11: 3,
-            
-            # 4. Lysosomes
-            12: 4, 13: 4,
-            
-            # 5. Lipid Droplets
-            44: 5, 14: 5, 15: 5,
-            
-            # 6. Nucleus
-            37: 6, 20: 6, 21: 6, 26: 6, 24: 6, 25: 6, 27: 6, 28: 6, 29: 6,
-            
-            # 7. Nuclear Pores
-            22: 7, 23: 7,
-            
-            # 8. Microtubules
-            30: 8, 36: 8,
-            
-            # 9. Peroxisomes
-            49: 9, 47: 9, 48: 9,
-            
-            # 10. Golgi Apparatus
-            6: 10, 7: 10,
-            
-            # 11. Endoplasmic Reticulum
-            16: 11, 17: 11, 64: 11,
-            
-            # 12. ER Exit Sites
-            18: 12, 19: 12,
-            
-            # 13. Background
-            35: 0, 1: 0 
-        }
-
-    
+        semantic_to_instance_map = class_map 
         
         # Fast lookup array for semantic mapping
         self.label_lookup = np.full(256, -1, dtype=np.int64)
