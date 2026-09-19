@@ -7,6 +7,7 @@ import os
 import sys
 import gc
 import csv
+import shutil
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
@@ -125,9 +126,7 @@ class Trainer:
         torch.save(checkpoint, self.latest_ckpt_path)
 
     def train(self, train_dataloader, val_dataloader, args, resume=True):
-        print(args.resume_ckpt)
-        print(args.resume_logs)
-        sys.exit(0)
+        """The main execution pipeline orchestrating the training lifecycle."""
         
         scheduler = OneCycleLR(
             self.optimizer, 
@@ -137,16 +136,31 @@ class Trainer:
             pct_start=0.05
         )
 
+        # 1. Determine Checkpoint Load Path
+        load_path = None
+        if args.resume_ckpt and os.path.exists(args.resume_ckpt):
+            load_path = args.resume_ckpt
+            print(f"[*] Manual checkpoint path provided: {load_path}")
+        elif resume and os.path.exists(self.latest_ckpt_path):
+            load_path = self.latest_ckpt_path
+
+        # 2. Handle CSV Logs Copier
         log_mode = "w"
-        if resume and os.path.exists(self.latest_ckpt_path):
-            print(f"[*] Resuming from {self.latest_ckpt_path}")
-            checkpoint = torch.load(self.latest_ckpt_path, map_location=self.device, weights_only=True)
+        if args.resume_logs and os.path.exists(args.resume_logs):
+            print(f"[*] Copying historical logs from Kaggle input to working directory...")
+            shutil.copyfile(args.resume_logs, self.log_file)
+            log_mode = "a"  # Switch to append mode since the file now exists locally
+
+        # 3. Load Checkpoint State
+        if load_path:
+            print(f"[*] Resuming model state from {load_path}")
+            checkpoint = torch.load(load_path, map_location=self.device, weights_only=True)
             
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.scaler.load_state_dict(checkpoint['scaler_state_dict'])
             
-            # CRITICAL FIX: Only load the scheduler state if the total steps match
+            # Conditionally load scheduler state
             if 'scheduler_state_dict' in checkpoint:
                 old_state = checkpoint['scheduler_state_dict']
                 if old_state.get('total_steps') == scheduler.total_steps:
@@ -158,16 +172,21 @@ class Trainer:
             self.best_val_loss = checkpoint['best_val_loss']
             self.patience_counter = checkpoint.get('patience_counter', 0)
             
-            log_mode = "a"
+            # If we are doing a standard local resume and didn't copy a file, set to append
+            if not args.resume_logs:
+                log_mode = "a"
+                
             print(f"[*] Successfully restored state. Resuming at Epoch {self.start_epoch}. Current Patience: {self.patience_counter}")
         else:
             print("[*] Starting training from scratch (Epoch 0).")
 
+        # 4. Initialize or Append Log File
         with open(self.log_file, log_mode, newline='') as f:
             writer = csv.writer(f)
             if log_mode == "w":
                 writer.writerow(["epoch", "lr", "train_loss", "val_loss"])
 
+        # 5. Main Training Loop
         for epoch in range(self.start_epoch, self.num_epochs):
             current_lr = self.optimizer.param_groups[0]['lr']
             print(f"\n=== Epoch [{epoch+1}/{self.num_epochs}] | Starting LR: {current_lr:.2e} ===")
