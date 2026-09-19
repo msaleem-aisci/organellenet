@@ -51,9 +51,9 @@ def main():
     cfg = load_config(args.config)
 
 
-    print(f"Before assinging: {cfg.data.epochs}")
+    print(f"Before assinging: {cfg.data.num_epochs}")
     cfg.data.num_epochs = args.num_epochs
-    print(f"After assinging: {cfg.data.epochs}")
+    print(f"After assinging: {cfg.data.num_epochs}")
 
     sys.exit(0)
     root_dir = cfg.path.root_dir
