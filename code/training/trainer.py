@@ -147,7 +147,6 @@ class Trainer:
         # 2. Handle CSV Logs Copier
         log_mode = "w"
         if args.resume_logs and os.path.exists(args.resume_logs):
-            print(f"[*] Copying historical logs from Kaggle input to working directory...")
             shutil.copyfile(args.resume_logs, self.log_file)
             log_mode = "a"  # Switch to append mode since the file now exists locally
 
