@@ -77,8 +77,6 @@ def main():
         rfs_weights_json = json.load(f)
 
 
-    print(cfg.unwanted_crops)
-    sys.exit(0)
     train_dataset = MISO2DDataset(
         crops_json_path = split_paths['train_crops'], 
         zarr_map = ZARR_MAP,
