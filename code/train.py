@@ -103,8 +103,8 @@ def main():
     )
     val_dataloader = DataLoader(
         val_dataset, 
-        batch_size=crg.data.batch_size, 
-        num_workers=crg.data.num_workers,
+        batch_size=cfg.data.batch_size, 
+        num_workers=cfg.data.num_workers,
         shuffle=False,    
         prefetch_factor=2,
         pin_memory=True
