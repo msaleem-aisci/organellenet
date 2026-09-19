@@ -58,6 +58,14 @@ SEMANTIC_MAP_13 ={
             35: 0, 1: 0 
         }
 
+UNWANTED_CROPS = {
+            "crop243", "crop56", "crop57", "crop58", "crop59", "crop54", "crop55", 
+            "crop60", "crop61", "crop62", "crop63", "crop64", "crop65", "crop66", 
+            "crop67", "crop68", "crop69", "crop70", "crop71", "crop72", "crop73", 
+            "crop74", "crop75", "crop76", "crop77", "crop282", "crop25", "crop26", 
+            "crop81", "crop82", "crop83", "crop84", "crop97", "crop98", "crop99"
+        }
+
 # ---------------------------------------------------------------------------
 # Strict Type Schemas
 # ---------------------------------------------------------------------------
@@ -128,6 +136,10 @@ class ExperimentConfig:
     # We use default_factory to automatically load the Python dictionary.
     # It will be universally applied to every experiment.
     semantic_map: Dict[int, int] = field(default_factory=lambda: SEMANTIC_MAP_13)
+    unwanted_crops: set[str] = field(
+        default_factory=lambda: UNWANTED_CROPS
+    )
+
 
 # ---------------------------------------------------------------------------
 # YAML Loading with Inheritance

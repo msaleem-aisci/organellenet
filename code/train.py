@@ -77,16 +77,20 @@ def main():
         rfs_weights_json = json.load(f)
 
 
+    print(cfg.unwanted_crops)
+    sys.exit(0)
     train_dataset = MISO2DDataset(
         crops_json_path = split_paths['train_crops'], 
         zarr_map = ZARR_MAP,
-        class_map = cfg.semantic_map
+        class_map = cfg.semantic_map,
+        unwanted_crops = cfg.unwanted_crops
     )
 
     val_dataset = MISO2DDataset(
         crops_json_path = split_paths['val_crops'], 
         zarr_map = ZARR_MAP,
-        class_map = cfg.semantic_map
+        class_map = cfg.semantic_map,
+        unwanted_crops = cfg.unwanted_crops
     )
 
 

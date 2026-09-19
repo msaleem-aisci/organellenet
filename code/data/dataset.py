@@ -26,18 +26,10 @@ from code.data.augmentations import apply_augmentations
 
 
 class MISO2DDataset(Dataset):
-    def __init__(self, crops_json_path, zarr_map, class_map, patch_dim=256):
+    def __init__(self, crops_json_path, zarr_map, class_map, unwanted_crops, patch_dim=256):
         self.patch_dim = patch_dim
         self.zarr_map = zarr_map
-        
-        unwanted_crops = {
-            "crop243", "crop56", "crop57", "crop58", "crop59", "crop54", "crop55", 
-            "crop60", "crop61", "crop62", "crop63", "crop64", "crop65", "crop66", 
-            "crop67", "crop68", "crop69", "crop70", "crop71", "crop72", "crop73", 
-            "crop74", "crop75", "crop76", "crop77", "crop282", "crop25", "crop26", 
-            "crop81", "crop82", "crop83", "crop84", "crop97", "crop98", "crop99"
-        }
-        
+
         with open(crops_json_path, 'r') as f:
             all_crops = json.load(f)
             # Filter crops before loading them into the dataset list
