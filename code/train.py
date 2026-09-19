@@ -95,9 +95,9 @@ def main():
 
     train_dataloader = DataLoader(
         train_dataset, 
-        batch_size=crg.data.batch_size, 
+        batch_size=cfg.data.batch_size, 
         sampler=train_sampler, 
-        num_workers=crg.data.num_workers,   
+        num_workers=cfg.data.num_workers,   
         prefetch_factor=2,
         pin_memory=True
     )
