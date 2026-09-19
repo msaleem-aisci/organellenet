@@ -73,8 +73,9 @@ def main():
     with open(rfs_weights_path, 'r') as f:
         rfs_weights_json = json.load(f)
 
+    print(cfg.semantic_map)
 
-
+    sys.exit(0)
     train_dataset = MISO2DDataset(
         crops_json_path = split_paths['train_crops'], 
         zarr_map = ZARR_MAP,
