@@ -124,7 +124,9 @@ class Trainer:
         }
         torch.save(checkpoint, self.latest_ckpt_path)
 
-    def train(self, train_dataloader, val_dataloader, resume=True):
+    def train(self, train_dataloader, val_dataloader, resume_ckpt, resume=True):
+        print(resume_ckpt)
+        sys.exit(0)
         
         scheduler = OneCycleLR(
             self.optimizer, 

@@ -37,7 +37,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Train BlueMind OrganelleNet")
     parser.add_argument("--config", type=str, required=True, help="Path to the YAML configuration file (e.g., configs/base.yml)")
-    
+    parser.add_argument("--resume_ckpt", type=str, default=None, help="Absolute path to a manual checkpoint file.")
     return parser.parse_args()
 
 def main():
@@ -110,7 +110,7 @@ def main():
 
     # Start the training loop
     print("\n[STARTING TRAINING PIPELINE]")
-    trainer.train(train_dataloader, val_dataloader, resume=True)
+    trainer.train(train_dataloader, val_dataloader, resume_ckpt=args.resume_ckpt, resume=True)
 
 
 
