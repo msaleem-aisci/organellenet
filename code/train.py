@@ -54,11 +54,14 @@ def main():
     cfg = load_config(args.config)
 
 
+    if args.num_epochs is not None:
+        cfg.training.num_epochs = args.num_epochs
 
-    cfg.training.num_epochs = args.num_epochs
-    cfg.data.samples = args.samples
-    cfg.data.batch_size = args.batch_size
+    if args.samples is not None:
+        cfg.data.samples = args.samples
 
+    if args.batch_size is not None:
+        cfg.data.batch_size = args.batch_size
 
 
     root_dir = cfg.path.root_dir
