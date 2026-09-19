@@ -52,7 +52,7 @@ def main():
 
 
     print(f"Before assinging: {cfg.training.num_epochs}")
-    cfg.data.num_epochs = args.num_epochs
+    cfg.training.num_epochs = args.num_epochs
     print(f"After assinging: {cfg.training.num_epochs}")
 
     sys.exit(0)
