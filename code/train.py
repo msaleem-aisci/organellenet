@@ -45,6 +45,8 @@ def parse_args():
 
     parser.add_argument("--experiment_name", type=str, default=None, help="Experiment Name")
     parser.add_argument("--entropy_masking", type=bool, default=None, help="Batch size")
+    parser.add_argument("--loss_function", type=str, default=None, help="Loss Function")
+
 
     return parser.parse_args()
 
@@ -71,6 +73,14 @@ def main():
 
     if args.entropy_masking is not None:
         cfg.training.entropy_masking = args.entropy_masking
+
+
+    if args.loss_function is not None:
+        cfg.training.loss_function = args.loss_function
+
+
+    # if args.entropy_masking is not None:
+    #     cfg.training.entropy_masking = args.entropy_masking
 
     root_dir = cfg.path.root_dir
     split_paths = split_handler(cfg.path.jsons, root_dir)

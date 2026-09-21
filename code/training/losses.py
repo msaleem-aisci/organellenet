@@ -1,6 +1,6 @@
 """
 Loss function factory for BlueMind OrganelleNet.
-Contains the custom BCE + Tversky loss with EMA Entropy Masking.
+Contains the custom BCE + Tversky loss with EMA Entropy Masking and standard DiceCE.
 """
 
 import os
@@ -52,6 +52,23 @@ def tversky_loss_fn(probs, targets_one_hot, valid_mask, alpha, beta, smooth=1e-6
     return 1.0 - tversky_index.mean()
 
 
+# ---------------------------------------------------------------------------
+# 3. Dice Function
+# ---------------------------------------------------------------------------
+def dice_loss_fn(probs, targets_one_hot, valid_mask, smooth=1e-6):
+    probs_flat = probs.view(probs.size(0), probs.size(1), -1)
+    targets_flat = targets_one_hot.view(targets_one_hot.size(0), targets_one_hot.size(1), -1)
+    
+    mask_flat = valid_mask.view(valid_mask.size(0), 1, -1)
+    
+    intersection = (mask_flat * probs_flat * targets_flat).sum(dim=2)
+    denominator = (mask_flat * probs_flat).sum(dim=2) + (mask_flat * targets_flat).sum(dim=2)
+    
+    dice_score = (2.0 * intersection + smooth) / (denominator + smooth)
+    
+    return 1.0 - dice_score.mean()
+
+
 class EMAEntropyMasking(nn.Module):
     def __init__(self, warmup_epochs=5, ema_momentum=0.95):
         super().__init__()
@@ -97,7 +114,6 @@ class EMAEntropyMasking(nn.Module):
 # ---------------------------------------------------------------------------
 # 4. Main BCE + Tversky Wrapper
 # ---------------------------------------------------------------------------
-
 class BCE_Tversky(nn.Module):
     def __init__(self, alpha=0.3, beta=0.7, smooth=1e-6, ignore_index=-1, warmup_epochs=5, entropy=False, ema_momentum=0.95):
         super().__init__()
@@ -110,7 +126,6 @@ class BCE_Tversky(nn.Module):
             self.entropy_masker = EMAEntropyMasking(warmup_epochs=warmup_epochs, ema_momentum=ema_momentum)
         else:
             self.entropy_masker = None
-
 
     def forward(self, logits, targets, current_epoch): 
         num_classes = logits.shape[1]
@@ -136,7 +151,36 @@ class BCE_Tversky(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# 5. Factory Function
+# 5. DiceCE Wrapper
+# ---------------------------------------------------------------------------
+class DiceCE(nn.Module):
+    def __init__(self, smooth=1e-6, ignore_index=-1):
+        super().__init__()
+        self.smooth = smooth
+        self.ignore_index = ignore_index
+
+    def forward(self, logits, targets, current_epoch=None): 
+        # current_epoch is accepted to maintain the same API signature as BCE_Tversky, 
+        # even though DiceCE does not use a curriculum.
+        num_classes = logits.shape[1]
+        
+        valid_mask = (targets != self.ignore_index)
+        safe_targets = targets.clone()
+        safe_targets[~valid_mask] = 0
+
+        targets_one_hot = F.one_hot(safe_targets, num_classes=num_classes).permute(0, 3, 1, 2).float()
+        probs = torch.sigmoid(logits)
+        
+        weighted_mask = valid_mask.float()
+     
+        bce = bce_loss_fn(logits, targets_one_hot, weighted_mask, self.smooth)
+        dice = dice_loss_fn(probs, targets_one_hot, weighted_mask, self.smooth)
+        
+        return bce + dice
+
+
+# ---------------------------------------------------------------------------
+# 6. Factory Function
 # ---------------------------------------------------------------------------
 def build_loss(config, device=None):
     """
@@ -145,17 +189,23 @@ def build_loss(config, device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-
-    criterion = BCE_Tversky(
-        alpha=0.3, 
-        beta=0.7, 
-        ignore_index=-1, 
-        warmup_epochs=config.training.warmup_epochs,
-        entropy=config.training.entropy_masking
-    )
-    print("="*70)
-    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {config.training.warmup_epochs,} | Entropy Masking: {config.training.entropy_masking} | Device: {device}")
-    print("="*70)
+    if config.training.loss_function == "DiceCE":
+        criterion = DiceCE(
+            ignore_index=-1
+        )
+        print("="*70)
+        print(f"Loss Initialized: DiceCE | Device: {device}")
+        print("="*70)
+    else:
+        criterion = BCE_Tversky(
+            alpha=0.3, 
+            beta=0.7, 
+            ignore_index=-1, 
+            warmup_epochs=config.training.warmup_epochs,
+            entropy=config.training.entropy_masking
+        )
+        print("="*70)
+        print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {config.training.warmup_epochs} | Entropy Masking: {config.training.entropy_masking} | Device: {device}")
+        print("="*70)
     
     return criterion.to(device)

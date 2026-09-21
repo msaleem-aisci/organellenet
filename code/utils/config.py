@@ -117,6 +117,7 @@ class TrainingConfig:
     early_stopping_patience: int
     print_freq: int
     entropy_masking: bool
+    loss_function: str
 
 @dataclass
 class ArchConfig:
