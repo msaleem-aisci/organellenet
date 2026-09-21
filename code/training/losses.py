@@ -108,14 +108,9 @@ class BCE_Tversky(nn.Module):
 
         if entropy:
             self.entropy_masker = EMAEntropyMasking(warmup_epochs=warmup_epochs, ema_momentum=ema_momentum)
-            print("="*50)
-            print(f"Entropy Masking is enabled.")
-            print("="*50)
         else:
             self.entropy_masker = None
-            print("="*50)
-            print(f"Entropy Masking is disabled.")
-            print("="*50)
+
 
     def forward(self, logits, targets, current_epoch): 
         num_classes = logits.shape[1]
@@ -161,7 +156,8 @@ def build_loss(config, device=None):
         warmup_epochs=warmup,
         entropy=use_entropy
     )
-    
+    print(" ")
     print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Entropy Masking: {use_entropy} | Device: {device}")
+    print(" ")
     
     return criterion.to(device)
