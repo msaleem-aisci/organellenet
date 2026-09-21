@@ -52,9 +52,6 @@ def tversky_loss_fn(probs, targets_one_hot, valid_mask, alpha, beta, smooth=1e-6
     return 1.0 - tversky_index.mean()
 
 
-# ---------------------------------------------------------------------------
-# 3. EMA Entropy Masking (With Memory Graph Fix)
-# ---------------------------------------------------------------------------
 class EMAEntropyMasking(nn.Module):
     def __init__(self, warmup_epochs=5, ema_momentum=0.95):
         super().__init__()
@@ -100,15 +97,25 @@ class EMAEntropyMasking(nn.Module):
 # ---------------------------------------------------------------------------
 # 4. Main BCE + Tversky Wrapper
 # ---------------------------------------------------------------------------
+
 class BCE_Tversky(nn.Module):
-    def __init__(self, alpha=0.3, beta=0.7, smooth=1e-6, ignore_index=-1, warmup_epochs=5, ema_momentum=0.95):
+    def __init__(self, alpha=0.3, beta=0.7, smooth=1e-6, ignore_index=-1, warmup_epochs=5, entropy=False, ema_momentum=0.95):
         super().__init__()
         self.alpha = alpha
         self.beta = beta
         self.smooth = smooth
         self.ignore_index = ignore_index
-        
-        self.entropy_masker = EMAEntropyMasking(warmup_epochs=warmup_epochs, ema_momentum=ema_momentum)
+
+        if entropy:
+            self.entropy_masker = EMAEntropyMasking(warmup_epochs=warmup_epochs, ema_momentum=ema_momentum)
+            print("="*50)
+            print(f"Entropy Masking is enabled.")
+            print("="*50)
+        else:
+            self.entropy_masker = None
+            print("="*50)
+            print(f"Entropy Masking is disabled.")
+            print("="*50)
 
     def forward(self, logits, targets, current_epoch): 
         num_classes = logits.shape[1]
@@ -120,7 +127,11 @@ class BCE_Tversky(nn.Module):
         targets_one_hot = F.one_hot(safe_targets, num_classes=num_classes).permute(0, 3, 1, 2).float()
         probs = torch.sigmoid(logits)
         
-        weighted_mask = self.entropy_masker(probs, valid_mask, current_epoch)
+        # Conditionally apply entropy masking
+        if self.entropy_masker is not None:
+            weighted_mask = self.entropy_masker(probs, valid_mask, current_epoch)
+        else:
+            weighted_mask = valid_mask.float()
      
         # Pass 'logits' to BCE, keep 'probs' for Tversky
         bce = bce_loss_fn(logits, targets_one_hot, weighted_mask, self.smooth)
@@ -139,16 +150,18 @@ def build_loss(config, device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Extract warmup epochs from config, default to 5 if missing
+    # Extract parameters from config, with safe defaults
     warmup = getattr(config.training, "warmup_epochs", 5)
+    use_entropy = getattr(config.training, "use_entropy", False)
 
     criterion = BCE_Tversky(
         alpha=0.3, 
         beta=0.7, 
         ignore_index=-1, 
-        warmup_epochs=warmup
+        warmup_epochs=warmup,
+        entropy=use_entropy
     )
     
-    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Device: {device}")
+    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Entropy Masking: {use_entropy} | Device: {device}")
     
     return criterion.to(device)
