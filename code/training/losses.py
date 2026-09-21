@@ -156,8 +156,8 @@ def build_loss(config, device=None):
         warmup_epochs=warmup,
         entropy=use_entropy
     )
-    print(" ")
+    print("="*70)
     print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Entropy Masking: {use_entropy} | Device: {device}")
-    print(" ")
+    print("="*70)
     
     return criterion.to(device)
