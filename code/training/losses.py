@@ -149,7 +149,7 @@ def build_loss(config, device=None):
     warmup = getattr(config.training, "warmup_epochs", 5)
     use_entropy = getattr(config.training, "use_entropy", False)
     print("+"*100)
-    print(config.entropy_masking)
+    print(config.training.entropy_masking)
 
     criterion = BCE_Tversky(
         alpha=0.3, 
