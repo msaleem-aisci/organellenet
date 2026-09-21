@@ -145,21 +145,17 @@ def build_loss(config, device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Extract parameters from config, with safe defaults
-    warmup = getattr(config.training, "warmup_epochs", 5)
-    use_entropy = getattr(config.training, "use_entropy", False)
-    print("+"*100)
-    print(config.training.entropy_masking)
+
 
     criterion = BCE_Tversky(
         alpha=0.3, 
         beta=0.7, 
         ignore_index=-1, 
-        warmup_epochs=warmup,
-        entropy=use_entropy
+        warmup_epochs=config.training.warmup_epochs,
+        entropy=config.training.entropy_masking
     )
     print("="*70)
-    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {warmup} | Entropy Masking: {use_entropy} | Device: {device}")
+    print(f"Loss Initialized: BCE_Tversky | Warmup Epochs: {config.training.warmup_epochs,} | Entropy Masking: {config.training.entropy_masking} | Device: {device}")
     print("="*70)
     
     return criterion.to(device)

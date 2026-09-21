@@ -75,7 +75,7 @@ def main():
     root_dir = cfg.path.root_dir
     split_paths = split_handler(cfg.path.jsons, root_dir)
 
-    print(f"Exp Name: {cfg.experiment_name}")
+    print(f">> Exp Name: {cfg.experiment_name}")
     ZARR_MAP = build_zarr_map(cfg.path.dataset)
 
   
