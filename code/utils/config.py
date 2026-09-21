@@ -116,6 +116,7 @@ class TrainingConfig:
     mixed_precision: bool
     early_stopping_patience: int
     print_freq: int
+    entropy_masking: bool
 
 @dataclass
 class ArchConfig:

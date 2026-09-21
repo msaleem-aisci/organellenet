@@ -33,4 +33,5 @@ training:
   mixed_precision: true
   early_stopping_patience: 10
   print_freq: 50
+  entropy_masking: false
 

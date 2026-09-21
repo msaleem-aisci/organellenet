@@ -43,6 +43,9 @@ def parse_args():
     parser.add_argument("--samples", type=int, default=None, help="Number of epochs.")
     parser.add_argument("--batch_size", type=int, default=None, help="Batch size")
 
+    parser.add_argument("--experiment_name", type=str, default=None, help="Experiment Name")
+    parser.add_argument("--entropy_masking", type=bool, default=None, help="Batch size")
+
     return parser.parse_args()
 
 def main():
@@ -63,6 +66,11 @@ def main():
     if args.batch_size is not None:
         cfg.data.batch_size = args.batch_size
 
+    if args.experiment_name is not None:
+        cfg.experiment_name = args.experiment_name
+
+    if args.entropy_masking is not None:
+        cfg.entropy_masking = args.entropy_masking
 
     root_dir = cfg.path.root_dir
     split_paths = split_handler(cfg.path.jsons, root_dir)
