@@ -69,8 +69,8 @@ def main():
     if args.experiment_name is not None:
         cfg.experiment_name = args.experiment_name
 
-    if args.training.entropy_masking is not None:
-        cfg.training.entropy_masking = args.training.entropy_masking
+    if args.entropy_masking is not None:
+        cfg.training.entropy_masking = args.entropy_masking
 
     root_dir = cfg.path.root_dir
     split_paths = split_handler(cfg.path.jsons, root_dir)
