@@ -32,6 +32,7 @@ from data.sampler import create_rfs_sampler
 from code.training.losses import build_loss
 from code.models.unet import build_model
 from code.training.trainer import Trainer
+from code.utils.class_to_crop import Class_to_Crop
 
 def parse_args():
 
@@ -89,6 +90,13 @@ def main():
     ZARR_MAP = build_zarr_map(cfg.path.dataset)
 
   
+
+    
+    ctc = Class_to_Crop(ZARR_MAP)
+    print(f"Class Mapper: {ctc.lass_mapper()}")
+
+
+    
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
    
     with open(rfs_weights_path, 'r') as f:
