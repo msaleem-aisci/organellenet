@@ -93,7 +93,7 @@ def main():
 
     
     ctc = Class_To_Crop(ZARR_MAP)
-    print(f"Class Mapper: {ctc.lass_mapper()}")
+    print(f"Class Mapper: {ctc.class_mapper()}")
 
 
     sys.exist(0)
