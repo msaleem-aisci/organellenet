@@ -32,7 +32,7 @@ from data.sampler import create_rfs_sampler
 from code.training.losses import build_loss
 from code.models.unet import build_model
 from code.training.trainer import Trainer
-from code.utils.class_to_crop import Class_to_Crop
+from code.utils.class_to_crop import Class_To_Crop
 
 def parse_args():
 
