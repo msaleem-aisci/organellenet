@@ -96,7 +96,7 @@ def main():
     print(f"Class Mapper: {ctc.class_mapper()}")
 
 
-    sys.exist(0)
+    sys.exit(0)
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
    
     with open(rfs_weights_path, 'r') as f:
