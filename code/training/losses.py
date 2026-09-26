@@ -169,7 +169,7 @@ class DiceCE(nn.Module):
         safe_targets[~valid_mask] = 0
 
         targets_one_hot = F.one_hot(safe_targets, num_classes=num_classes).permute(0, 3, 1, 2).float()
-        probs = torch.sigmoid(logits)
+        probs = torch.softmax(logits, dim=1)
         
         weighted_mask = valid_mask.float()
      
