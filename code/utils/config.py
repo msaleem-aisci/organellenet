@@ -17,54 +17,56 @@ if _PROJECT_ROOT not in sys.path:
 # ---------------------------------------------------------------------------
 # Hardcoded Biological Constants (No longer needed in YAML)
 # ---------------------------------------------------------------------------
-SEMANTIC_MAP_13 ={
-            # 1. Mitochondria
-            50: 1, 3: 1, 4: 1, 5: 1,
-            
-            # 2. Vesicles
-            8: 2, 9: 2,
-            
-            # 3. Endosomes
-            10: 3, 11: 3,
-            
-            # 4. Lysosomes
-            12: 4, 13: 4,
-            
-            # 5. Lipid Droplets
-            44: 5, 14: 5, 15: 5,
-            
-            # 6. Nucleus
-            37: 6, 20: 6, 21: 6, 26: 6, 24: 6, 25: 6, 27: 6, 28: 6, 29: 6,
-            
-            # 7. Nuclear Pores
-            22: 7, 23: 7,
-            
-            # 8. Microtubules
-            30: 8, 36: 8,
-            
-            # 9. Peroxisomes
-            49: 9, 47: 9, 48: 9,
-            
-            # 10. Golgi Apparatus
-            6: 10, 7: 10,
-            
-            # 11. Endoplasmic Reticulum
-            16: 11, 17: 11, 64: 11,
-            
-            # 12. ER Exit Sites
-            18: 12, 19: 12,
-            
-            # 13. Background
-            35: 0, 1: 0 
-        }
+atomic_to_channel = {
+    # Complex
+    3:  1,   # mito_mem
+    4:  2,   # mito_lum
+    16: 3,   # er_mem
+    17: 4,   # er_lum
+    6:  5,   # golgi_mem
+    7:  6,   # golgi_lum
+    # Simple
+    13: 7,   # lyso_lum
+    15: 8,   # ld_lum
+    9:  9,   # ves_lum
+    11: 10,  # endo_lum
+    48: 11,  # perox_lum
+    # Structural
+    20: 12,  # ne_mem
+    22: 13,  # np_out
+    30: 14,  # mt_out
+    # Background
+    1:  0,   # ecs
+    35: 0    # cyto
+}
 
+# Because we are using 14 sementic classes, these are the crops that have no these 14 classes. so pytorch dataset class
+# converts them into -1. therefore, I removed them from training. 
 UNWANTED_CROPS = {
-            "crop243", "crop56", "crop57", "crop58", "crop59", "crop54", "crop55", 
-            "crop60", "crop61", "crop62", "crop63", "crop64", "crop65", "crop66", 
-            "crop67", "crop68", "crop69", "crop70", "crop71", "crop72", "crop73", 
-            "crop74", "crop75", "crop76", "crop77", "crop282", "crop25", "crop26", 
-            "crop81", "crop82", "crop83", "crop84", "crop97", "crop98", "crop99"
-        }
+    # Original structural removals
+    "crop337", "crop247", "crop357",'crop358',
+    
+    # Original background-only crops
+    "crop243", "crop56", "crop57", "crop58", "crop59", "crop54", "crop55", 
+    "crop60", "crop61", "crop62", "crop63", "crop64", "crop65", "crop66", 
+    "crop67", "crop68", "crop69", "crop70", "crop71", "crop72", "crop73", 
+    "crop74", "crop75", "crop76", "crop77", "crop282", "crop25", "crop26", 
+    "crop81", "crop82", "crop83", "crop84", "crop97", "crop98", "crop99",
+    
+    # Empty crops from Batch 1 & 2
+    "crop257", "crop238", "crop94", "crop95", "crop96", "crop85", "crop86",
+    "crop87", "crop88", "crop89", "crop90", "crop91", "crop92", "crop93",
+    "crop423", "crop452", "crop472", "crop421", "crop179", "crop184", 
+    "crop221", "crop229", "crop230", "crop231", "crop473", "crop289", 
+    "crop354", "crop355", "crop356", "crop362", "crop366", "crop367", 
+    "crop387", "crop408",
+    
+    # Empty crops from Final Batch
+    "crop378", "crop379", "crop380", "crop381", "crop177",
+    # Newly identified empty crops (Lipid Droplet, Nucleus, Peroxisome Parent Only)
+    "crop324", "crop329", "crop336", "crop347", "crop348", "crop349", "crop351", 
+    "crop353", "crop386", "crop407", "crop410", "crop411", "crop412", "crop413"
+}
 
 # ---------------------------------------------------------------------------
 # Strict Type Schemas
@@ -137,7 +139,8 @@ class ExperimentConfig:
 
     # We use default_factory to automatically load the Python dictionary.
     # It will be universally applied to every experiment.
-    semantic_map: Dict[int, int] = field(default_factory=lambda: SEMANTIC_MAP_13)
+    semantic_map: Dict[int, int] = field(default_factory=lambda: atomic_to_channel)
+
     unwanted_crops: set[str] = field(
         default_factory=lambda: UNWANTED_CROPS
     )
