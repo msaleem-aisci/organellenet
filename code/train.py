@@ -89,14 +89,6 @@ def main():
     print(f">> Exp Name: {cfg.experiment_name}")
     ZARR_MAP = build_zarr_map(cfg.path.dataset)
 
-  
-
-    
-    ctc = Class_To_Crop(ZARR_MAP)
-    print(f"Class Mapper: {ctc.class_mapper()}")
-
-
-    sys.exit(0)
     rfs_weights_path = os.path.join(cfg.path.jsons, cfg.rfs_weights)
    
     with open(rfs_weights_path, 'r') as f:
