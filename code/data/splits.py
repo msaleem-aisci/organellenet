@@ -149,3 +149,129 @@ def prepare_splits(
         "test_path": test_path,
         "stats": stats,
     }
+
+
+
+def prepare_splits1(
+    blueprint_json_path: str,
+    output_dir: str,
+    target_classes: list,
+    split_ratios: list = None,  # Kept for signature compatibility, but bypassed by hardcoded sets
+    excluded_crop: str = None,  # Can still be used to force a specific crop out
+    class_mapping: dict = None,
+    strip_suffixes: bool = True,
+    seed: int = 42,             # Kept for signature compatibility
+) -> dict:
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 1. Hardcoded Curated Anchor Crops
+    train_crops_set = {
+        "crop234", "crop236", "crop237", "crop239", "crop248", "crop252", "crop256", 
+        "crop292", "crop235", "crop240", "crop241", "crop242", "crop245", "crop249", 
+        "crop255", "crop258", "crop259", "crop291", "crop116", "crop117", "crop118", 
+        "crop119", "crop130", "crop120", "crop121", "crop123", "crop134", "crop174", 
+        "crop176", "crop185", "crop78", "crop1", "crop13", "crop14", "crop15", "crop16", 
+        "crop18", "crop19", "crop23", "crop28", "crop3", "crop4", "crop6", "crop7", 
+        "crop8", "crop100", "crop101", "crop102", "crop27", "crop33", "crop34", "crop50", 
+        "crop51", "crop107", "crop112", "crop126", "crop180", "crop182", "crop35", 
+        "crop36", "crop37", "crop43", "crop47", "crop109", "crop31", "crop32", "crop40", 
+        "crop48", "crop49", "crop129", "crop140", "crop141", "crop146", "crop147", 
+        "crop148", "crop149", "crop156", "crop158", "crop159", "crop160", "crop162", 
+        "crop163", "crop164", "crop165", "crop166", "crop268", "crop269", "crop270", 
+        "crop272", "crop273", "crop274", "crop276", "crop277", "crop278", "crop279", 
+        "crop280", "crop298", "crop313", "crop321", "crop322", "crop323", "crop326", 
+        "crop377", "crop333", "crop340", "crop341", "crop342", "crop368", "crop369", 
+        "crop370", "crop376", "crop125", "crop131", "crop133", "crop136", "crop137", 
+        "crop138", "crop139", "crop142", "crop115", "crop20", "crop22", "crop186", 
+        "crop187", "crop188", "crop189", "crop201", "crop202", "crop203", "crop206", 
+        "crop208", "crop209", "crop210", "crop211", "crop212", "crop213", "crop216", 
+        "crop218", "crop190", "crop192", "crop193", "crop195", "crop196", "crop197", 
+        "crop198", "crop199", "crop214", "crop220", "crop222", "crop224", "crop225", 
+        "crop226", "crop227", "crop144", "crop145", "crop150", "crop151", "crop157", 
+        "crop171", "crop172", "crop175", "crop183", "crop416", "crop178", "crop113", 
+        "crop155"
+    }
+
+    val_crops_set = {
+        'crop219', 'crop143', 'crop266', 'crop191', 'crop110', 
+        'crop345', 'crop228', 'crop124', 'crop173', 'crop181', 
+        'crop200', 'crop319', 'crop417', 'crop79',  'crop9'
+    }
+
+    test_crops_set = {
+        'crop254', 'crop122', 'crop161', 'crop132', 'crop267', 
+        'crop111', 'crop80',  'crop320', 'crop325', 'crop135', 
+        'crop275', 'crop217', 'crop346', 'crop38',  'crop42'
+    }
+    
+    # 2. Load blueprint
+    with open(blueprint_json_path, "r") as f:
+        blueprint = json.load(f)
+        
+    target_set = set(target_classes)
+    train_patches, val_patches, test_patches = [], [], []
+    
+    # 3. Filter, Map, and Route
+    for patch in blueprint:
+        raw_cls = patch.get("class", "")
+        
+        # Apply semantic mapping
+        mapped_cls = raw_cls
+        if class_mapping and raw_cls in class_mapping:
+            mapped_cls = class_mapping[raw_cls]
+        elif strip_suffixes:
+            mapped_cls = raw_cls.split('_')[0]
+            
+        # Check against target classes
+        if mapped_cls in target_set:
+            patch["class"] = mapped_cls
+            crop_id = patch.get("crop")
+            
+            # Force holdout if excluded_crop matches
+            if excluded_crop and crop_id == excluded_crop:
+                test_patches.append(patch)
+                continue
+                
+            # Route to hardcoded splits
+            if crop_id in test_crops_set:
+                test_patches.append(patch)
+            elif crop_id in val_crops_set:
+                val_patches.append(patch)
+            elif crop_id in train_crops_set:
+                train_patches.append(patch)
+
+    # 4. Save Output JSONs
+    train_path = os.path.join(output_dir, "train.json")
+    val_path = os.path.join(output_dir, "val.json")
+    test_path = os.path.join(output_dir, "test.json")
+    
+    with open(train_path, "w") as f:
+        json.dump(train_patches, f, indent=4)
+    with open(val_path, "w") as f:
+        json.dump(val_patches, f, indent=4)
+    with open(test_path, "w") as f:
+        json.dump(test_patches, f, indent=4)
+        
+    stats = {
+        "total_patches": len(train_patches) + len(val_patches) + len(test_patches),
+        "train_patches": len(train_patches),
+        "val_patches": len(val_patches),
+        "test_patches": len(test_patches)
+    }
+    
+    print("=" * 60)
+    print("Strict Target-Based Crop Split Complete")
+    print("-" * 60)
+    print(f"Total Patches: {stats['total_patches']}")
+    print(f"-> Train: {stats['train_patches']}")
+    print(f"-> Val  : {stats['val_patches']}")
+    print(f"-> Test : {stats['test_patches']}")
+    print("=" * 60)
+    
+    return {
+        "train_path": train_path,
+        "val_path": val_path,
+        "test_path": test_path,
+        "stats": stats
+    }

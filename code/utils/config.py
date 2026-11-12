@@ -70,8 +70,8 @@ DEFAULT_WEIGHTS_14 = DEFAULT_WEIGHTS_13 + [1.7003]
 # ---------------------------------------------------------------------------
 @dataclass
 class PathsConfig:
-    main_dir: str = "/mnt/graid/codebases_other/cellmap-segmentation-challenge/saleem/organellenet"
-    data_dir: str = "/mnt/graid/codebases_other/cellmap-segmentation-challenge/data"
+    main_dir: str = "/kaggle/working/organellenet"
+    data_dir: str = "/kaggle/working/data"
     json_dir: str = ""   # auto-resolved
 
     def __post_init__(self):
