@@ -74,7 +74,7 @@ def main():
 
 
 
-    split_paths = prepare_splits(
+    split_paths = prepare_splits1(
         blueprint_json_path=blueprint_path,
         output_dir=split_output_dir,
         target_classes=config.data.target_classes,
@@ -82,6 +82,8 @@ def main():
         excluded_crop=config.data.excluded_crop,
         seed=config.data.seed,
     )
+
+    print(split_paths['train_path'])
     print("Stopeped")
     sys.exit(0)
 
