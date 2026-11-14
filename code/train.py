@@ -84,7 +84,7 @@ def main():
     )
 
     print(split_paths['train_path'])
-    print("Stopeped")
+    print("Stopeped 6")
     sys.exit(0)
 
     # 4. Build zarr map
