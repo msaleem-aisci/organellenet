@@ -72,7 +72,6 @@ def setup_run_directory(config, config_path: str = None) -> dict:
             f.write(f"num_classes: {config.data.num_classes}\n")
             f.write(f"model_out_channels: {config.model.out_channels}\n")
             f.write(f"strides: {config.model.strides}\n")
-            f.write(f"max_jitter: {config.data.max_jitter}\n")
             f.write(f"early_stop_metric: {config.training.early_stop_metric}\n")
             f.write(f"accumulation_steps: {config.training.accumulation_steps}\n")
 
