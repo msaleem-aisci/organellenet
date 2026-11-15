@@ -75,6 +75,13 @@ DEFAULT_WEIGHTS_30 = [
     0.8071, 5.0000, 5.0000, 0.1249, 5.0000, 0.1000, 1.0100, 2.6797, 5.0000, 3.2246
 ]
 
+target_classes = [
+        "pm", "mito_mem", "mito_lum", "mito_ribo", "golgi_mem", 
+        "golgi_lum", "ves_mem", "ves_lum", "endo_mem", "endo_lum", 
+        "lyso_mem", "lyso_lum", "ld_mem", "ld_lum", "er_mem", "er_lum", 
+        "eres_mem", "eres_lum", "ne_mem", "ne_lum", "np_out", "np_in", 
+        "hchrom", "echrom", "nucpl", "mt_out", "mt_in", "perox_mem", "perox_lum"
+    ]
 
 # ---------------------------------------------------------------------------
 # Dataclass
@@ -96,7 +103,9 @@ class DataConfig:
     seed: int = 42
     num_classes: int = 30
     target_type: str = "labels"
-    blueprint_json: str = "centroids_across_all_crops.json"
+    blueprint_json: str = "latest_baseline_centroids.json"
+    # RESTORED: train.py needs this for evaluation/logging
+    target_classes: List[str] = field(default_factory=lambda: target_classes)
 
 
 @dataclass

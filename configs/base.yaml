@@ -15,7 +15,37 @@ data:
   seed: 42
   num_classes: 30
   target_type: "labels"
-  blueprint_json: "centroids_across_all_crops.json"
+  blueprint_json: "latest_baseline_centroids.json"
+  target_classes:
+    - pm
+    - mito_mem
+    - mito_lum
+    - mito_ribo
+    - golgi_mem
+    - golgi_lum
+    - ves_mem
+    - ves_lum
+    - endo_mem
+    - endo_lum
+    - lyso_mem
+    - lyso_lum
+    - ld_mem
+    - ld_lum
+    - er_mem
+    - er_lum
+    - eres_mem
+    - eres_lum
+    - ne_mem
+    - ne_lum
+    - np_out
+    - np_in
+    - hchrom
+    - echrom
+    - nucpl
+    - mt_out
+    - mt_in
+    - perox_mem
+    - perox_lum
 
 model:
   spatial_dims: 3
