@@ -24,7 +24,7 @@ from code.utils.config import load_config
 from code.utils.paths import setup_run_directory
 from code.data.zarr_utils import build_zarr_map
 from code.data.dataset import PatchDataset
-from code.data.sampler import create_balanced_sampler
+from code.data.sampler import create_rfs_sampler
 from code.data.splits import prepare_splits1
 from code.models.unet import build_model
 from code.training.losses import build_loss
