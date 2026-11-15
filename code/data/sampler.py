@@ -26,7 +26,7 @@ def organelle_class_name(class_name: str) -> str:
     return class_name
 
 
-def create_balanced_sampler(dataset, balance_level: str = "raw") -> WeightedRandomSampler:
+def create_balanced_sampler1(dataset, balance_level: str = "raw") -> WeightedRandomSampler:
     """
     Create a WeightedRandomSampler that balances class frequencies.
 
@@ -77,4 +77,29 @@ def create_balanced_sampler(dataset, balance_level: str = "raw") -> WeightedRand
         num_samples=len(sample_weights_tensor),
         replacement=True,
     )
+    return sampler
+
+
+
+def create_rfs_sampler(dataset, weights_json_path, num_samples=1600):
+    # 1. Load the offline weights
+    with open(weights_json_path, 'r') as f:
+        rfs_weights_dict = json.load(f)
+        
+    # 2. Map the weights using the Dataset's internal list
+    sample_weights = []
+    for crop_meta in dataset.crops:
+        crop_id = crop_meta["crop"]
+        weight = rfs_weights_dict.get(crop_id, 1.0)
+        sample_weights.append(weight)
+        
+    # 3. Convert to PyTorch sampler
+    weights_tensor = torch.DoubleTensor(sample_weights)
+    
+    sampler = WeightedRandomSampler(
+        weights=weights_tensor, 
+        num_samples=num_samples,
+        replacement=True
+    )
+    
     return sampler
