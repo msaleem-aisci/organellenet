@@ -151,17 +151,11 @@ def prepare_splits(
     }
 
 
-
-def prepare_splits1(
-    blueprint_json_path: str,
-    output_dir: str,
-    target_classes: list,
-
-    class_mapping: dict = None,
-    strip_suffixes: bool = True,
-    seed: int = 42,             # Kept for signature compatibility
-) -> dict:
-    
+def prepare_splits1(blueprint_json_path: str, output_dir: str) -> dict:
+    """
+    Creates strict crop-level splits (166 Train, 15 Val, 15 Test) based on unique crop IDs.
+    Strips out all legacy patch-level duplicate routing and semantic filtering.
+    """
     os.makedirs(output_dir, exist_ok=True)
     
     # 1. Hardcoded Curated Anchor Crops
@@ -203,69 +197,62 @@ def prepare_splits1(
         'crop111', 'crop80',  'crop320', 'crop325', 'crop135', 
         'crop275', 'crop217', 'crop346', 'crop38',  'crop42'
     }
-    
+
     # 2. Load blueprint
-    with open(blueprint_json_path, "r") as f:
+    with open(blueprint_json_path, 'r') as f:
         blueprint = json.load(f)
-        
-    target_set = set(target_classes)
-    train_patches, val_patches, test_patches = [], [], []
-    
-    # 3. Filter, Map, and Route
+
+    train_split, val_split, test_split = {}, {}, {}
+
+    # 3. Deduplicate and Route strictly based on the defined lists
     for patch in blueprint:
-        raw_cls = patch.get("class", "")
+        crop_id = patch.get("crop")
         
-        # Apply semantic mapping
-        mapped_cls = raw_cls
-        if class_mapping and raw_cls in class_mapping:
-            mapped_cls = class_mapping[raw_cls]
-        elif strip_suffixes:
-            mapped_cls = raw_cls.split('_')[0]
-            
-        # Check against target classes
-        if mapped_cls in target_set:
-            patch["class"] = mapped_cls
-            crop_id = patch.get("crop")
-            
-            # Force holdout if excluded_crop matches
-            if excluded_crop and crop_id == excluded_crop:
-                test_patches.append(patch)
-                continue
-                
-            # Route to hardcoded splits
-            if crop_id in test_crops_set:
-                test_patches.append(patch)
-            elif crop_id in val_crops_set:
-                val_patches.append(patch)
-            elif crop_id in train_crops_set:
-                train_patches.append(patch)
+        crop_meta = {
+            "crop": crop_id,
+            "dataset": patch.get("dataset"),
+            "em_scale": patch.get("em_scale"),
+            "label_scale": patch.get("label_scale")
+        }
+
+        if crop_id in train_crops_set:
+            if crop_id not in train_split:
+                train_split[crop_id] = crop_meta
+        elif crop_id in val_crops_set:
+            if crop_id not in val_split:
+                val_split[crop_id] = crop_meta
+        elif crop_id in test_crops_set:
+            if crop_id not in test_split:
+                test_split[crop_id] = crop_meta
+
+    train_list = list(train_split.values())
+    val_list = list(val_split.values())
+    test_list = list(test_split.values())
 
     # 4. Save Output JSONs
     train_path = os.path.join(output_dir, "train.json")
     val_path = os.path.join(output_dir, "val.json")
     test_path = os.path.join(output_dir, "test.json")
-    
-    with open(train_path, "w") as f:
-        json.dump(train_patches, f, indent=4)
-    with open(val_path, "w") as f:
-        json.dump(val_patches, f, indent=4)
-    with open(test_path, "w") as f:
-        json.dump(test_patches, f, indent=4)
+
+    with open(train_path, 'w') as f:
+        json.dump(train_list, f, indent=4)
+    with open(val_path, 'w') as f:
+        json.dump(val_list, f, indent=4)
+    with open(test_path, 'w') as f:
+        json.dump(test_list, f, indent=4)
         
     stats = {
-        "total_patches": len(train_patches) + len(val_patches) + len(test_patches),
-        "train_patches": len(train_patches),
-        "val_patches": len(val_patches),
-        "test_patches": len(test_patches)
+        "train_crops": len(train_list),
+        "val_crops": len(val_list),
+        "test_crops": len(test_list)
     }
-    
+
     print("=" * 60)
     print("Strict Target-Based Crop Split Complete")
     print("-" * 60)
-    print(f"Total Patches: {stats['total_patches']}")
-    print(f"-> Train: {stats['train_patches']}")
-    print(f"-> Val  : {stats['val_patches']}")
-    print(f"-> Test : {stats['test_patches']}")
+    print(f"-> Train Crops: {stats['train_crops']} (Expected: 166)")
+    print(f"-> Val Crops  : {stats['val_crops']} (Expected: 15)")
+    print(f"-> Test Crops : {stats['test_crops']} (Expected: 15)")
     print("=" * 60)
     
     return {
