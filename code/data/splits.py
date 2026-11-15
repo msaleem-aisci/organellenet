@@ -156,8 +156,7 @@ def prepare_splits1(
     blueprint_json_path: str,
     output_dir: str,
     target_classes: list,
-    split_ratios: list = None,  # Kept for signature compatibility, but bypassed by hardcoded sets
-    excluded_crop: str = None,  # Can still be used to force a specific crop out
+
     class_mapping: dict = None,
     strip_suffixes: bool = True,
     seed: int = 42,             # Kept for signature compatibility

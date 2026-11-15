@@ -78,8 +78,7 @@ def main():
         blueprint_json_path=blueprint_path,
         output_dir=split_output_dir,
         target_classes=config.data.target_classes,
-        split_ratios=config.data.split_ratios,
-        excluded_crop=config.data.excluded_crop,
+
         seed=config.data.seed,
     )
 
