@@ -112,7 +112,7 @@ def main():
     train_sampler = create_rfs_sampler(
         dataset=train_dataset, 
         weights_json_path=config.data.rfs_weights_path, 
-        num_samples=config.training.train_samples
+        num_samples=6400
     )
 
     train_loader = DataLoader(
@@ -126,7 +126,7 @@ def main():
     val_sampler = RandomSampler(
         data_source=val_dataset, 
         replacement=True, 
-        num_samples=config.training.val_samples
+        num_samples=800
     )
     val_loader = DataLoader(
         val_dataset,
