@@ -18,7 +18,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, RandomSampler
 
 from code.utils.config import load_config
 from code.utils.paths import setup_run_directory
@@ -109,9 +109,10 @@ def main():
 
 
     # 6. Create data loaders
-    train_sampler = create_balanced_sampler(
-        train_dataset,
-        balance_level=config.training.sampler_balance_level,
+    train_sampler = create_rfs_sampler(
+        dataset=train_dataset, 
+        weights_json_path=config.data.rfs_weights_path, 
+        num_samples=config.training.train_samples
     )
 
     train_loader = DataLoader(
@@ -121,6 +122,11 @@ def main():
         num_workers=config.training.num_workers,
         pin_memory=True,
         drop_last=True,
+    )
+    val_sampler = RandomSampler(
+        data_source=val_dataset, 
+        replacement=True, 
+        num_samples=config.training.val_samples
     )
     val_loader = DataLoader(
         val_dataset,

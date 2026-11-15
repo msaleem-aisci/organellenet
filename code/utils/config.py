@@ -96,7 +96,7 @@ class PathsConfig:
         if not self.json_dir:
             self.json_dir = os.path.join(self.main_dir, "all_jsons")
 
-
+# crop_rfs_weights.json
 @dataclass
 class DataConfig:
     patch_dim: int = 128
@@ -104,6 +104,7 @@ class DataConfig:
     num_classes: int = 30
     target_type: str = "labels"
     blueprint_json: str = "latest_baseline_centroids.json"
+    rfs_weights_path: str = "crop_rfs_weights.json"
     # RESTORED: train.py needs this for evaluation/logging
     target_classes: List[str] = field(default_factory=lambda: target_classes)
 
@@ -119,6 +120,8 @@ class ModelConfig:
     kernel_size: int = 3
     up_kernel_size: int = 3
     num_res_units: int = 2
+    train_samples: int = 6400
+    val_samples: int = 800
     act: str = "PRELU"
     norm: str = "INSTANCE"
 
