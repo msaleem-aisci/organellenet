@@ -8,34 +8,20 @@ experiment_name: unnamed-experiment
 
 paths:
   main_dir: /kaggle/working/organellenet
-  data_dir: /kaggle/working//data
+  data_dir: /kaggle/working/data
 
 data:
   patch_dim: 128
-  max_jitter: 0
   seed: 42
-  num_classes: 13
-  target_classes:
-    - endo
-    - ld
-    - lyso
-    - mito
-    - mt
-    - np
-    - nuc
-    - perox
-    - ves
-    - golgi
-    - er
-    - eres
-  blueprint_json: static_dynamic_baseline.json
-  split_ratios: [0.80, 0.10, 0.10]
-  excluded_crop: null
+  num_classes: 30
+  target_type: "labels"
+  blueprint_json: "centroids_across_all_crops.json"
 
 model:
   spatial_dims: 3
   in_channels: 1
-  out_channels: 13
+  out_channels: 30
+  scale_conditioned: False
   channels: [64, 128, 256, 512, 1024]
   strides: [2, 2, 2, 2]
   kernel_size: 3
@@ -54,7 +40,21 @@ training:
   scheduler_mode: min
   early_stop_patience: 12
   early_stop_metric: val_dice
+  loss_type: "dice_ce"
   accumulation_steps: 1
   print_freq: 1
   num_workers: 2
   class_weights: null   # null = use defaults from config.py
+
+augmentation:
+  enabled: False
+  flip: True
+  rotate90: True
+  intensity_scale_range: [0.8, 1.2]
+  intensity_shift_range: [-0.1, 0.1]
+  gaussian_noise_std: 0.03
+  gamma_range: [0.7, 1.5]
+  elastic_enabled: True
+  elastic_alpha: 80.0
+  elastic_sigma: 10.0
+  elastic_prob: 0.3
