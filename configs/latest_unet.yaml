@@ -50,8 +50,8 @@ model:
 
 training:
   batch_size: 4
-  train_samples: 6400
-  val_samples: 800
+  # train_samples: 6400
+  # val_samples: 800
   accumulation_steps: 2
   early_stop_patience: 15
   early_stop_metric: val_dice
