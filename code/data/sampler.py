@@ -81,7 +81,7 @@ def create_balanced_sampler1(dataset, balance_level: str = "raw") -> WeightedRan
 
 
 
-def create_balanced_sampler(dataset, weights_json_path, num_samples=1600):
+def create_rfs_sampler(dataset, weights_json_path, num_samples=1600):
     # 1. Load the offline weights
     with open(weights_json_path, 'r') as f:
         rfs_weights_dict = json.load(f)
