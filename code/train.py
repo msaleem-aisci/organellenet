@@ -83,10 +83,6 @@ def main():
         seed=config.data.seed,
     )
 
-    print(split_paths['train_path'])
-    print("Stopeped 6")
-    sys.exit(0)
-
     # 4. Build zarr map
     zarr_map = build_zarr_map(config.paths.data_dir)
     print(f"Zarr map built: {len(zarr_map)} datasets found")
@@ -97,7 +93,7 @@ def main():
         zarr_map=zarr_map,
         label_map=config.label_map,
         patch_dim=config.data.patch_dim,
-        max_jitter=config.data.max_jitter,
+   
         augmentation_config=config.augmentation,
         target_type=config.data.target_type,
         num_classes=config.data.num_classes,
@@ -108,11 +104,13 @@ def main():
         zarr_map=zarr_map,
         label_map=config.label_map,
         patch_dim=config.data.patch_dim,
-        max_jitter=0,  # Always static for validation
+    
         target_type=config.data.target_type,
         num_classes=config.data.num_classes,
         scale_conditioned=config.model.scale_conditioned,
     )
+
+
 
     # 6. Create data loaders
     train_sampler = create_balanced_sampler(

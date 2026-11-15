@@ -22,47 +22,59 @@ if _PROJECT_ROOT not in sys.path:
 
 
 # ---------------------------------------------------------------------------
-# Default semantic → instance label mapping (shared across all baselines)
+# Semantic -> Channel mapping (30 Atomic Organelles + Background)
 # ---------------------------------------------------------------------------
-LABEL_MAP_13CLS = {
-    3: 1, 4: 1, 5: 1, 50: 1,                                   # 1. Mitochondria
-    8: 2, 9: 2,                                                 # 2. Vesicles
-    10: 3, 11: 3,                                               # 3. Endosomes
-    12: 4, 13: 4,                                               # 4. Lysosomes
-    14: 5, 15: 5, 44: 5,                                       # 5. Lipid Droplets
-    20: 6, 21: 6, 24: 6, 25: 6, 26: 6, 27: 6, 28: 6, 29: 6, 37: 6,  # 6. Nucleus
-    22: 7, 23: 7,                                               # 7. Nuclear Pores
-    30: 8, 36: 8,                                               # 8. Microtubules
-    47: 9, 48: 9, 49: 9,                                       # 9. Peroxisomes
-    6: 10, 7: 10,                                               # 10. Golgi Apparatus
-    16: 11, 17: 11,                                             # 11. Endoplasmic Reticulum
-    18: 12, 19: 12,                                             # 12. ER Exit Sites
+LABEL_MAP_30CLS =  {
+            1:  0,   # ecs (background)
+            35: 0,   # cyto (background)
+            2:  1,   # pm
+            3:  2,   # mito_mem
+            4:  3,   # mito_lum
+            5:  4,   # mito_ribo
+            6:  5,   # golgi_mem
+            7:  6,   # golgi_lum
+            8:  7,   # ves_mem
+            9:  8,   # ves_lum
+            10: 9,   # endo_mem
+            11: 10,  # endo_lum
+            12: 11,  # lyso_mem
+            13: 12,  # lyso_lum
+            14: 13,  # ld_mem
+            15: 14,  # ld_lum
+            16: 15,  # er_mem
+            17: 16,  # er_lum
+            18: 17,  # eres_mem
+            19: 18,  # eres_lum
+            20: 19,  # ne_mem
+            21: 20,  # ne_lum
+            22: 21,  # np_out
+            23: 22,  # np_in
+            24: 23,  # hchrom
+            26: 24,  # echrom
+            28: 25,  # nucpl
+            30: 26,  # mt_out
+            36: 27,  # mt_in
+            47: 28,  # perox_mem
+            48: 29   # perox_lum
+        }
+
+CLASS_NAMES_30 = {
+    0: "Background", 1: "pm", 2: "mito_mem", 3: "mito_lum",
+    4: "mito_ribo", 5: "golgi_mem", 6: "golgi_lum", 7: "ves_mem",
+    8: "ves_lum", 9: "endo_mem", 10: "endo_lum", 11: "lyso_mem", 12: "lyso_lum",
+    13: "ld_mem", 14: "ld_lum", 15: "er_mem", 16: "er_lum", 17: "eres_mem",
+    18: "eres_lum", 19: "ne_mem", 20: "ne_lum", 21: "np_out", 22: "np_in",
+    23: "hchrom", 24: "echrom", 25: "nucpl", 26: "mt_out", 27: "mt_in",
+    28: "perox_mem", 29: "perox_lum"
 }
 
-LABEL_MAP_14CLS = {
-    **LABEL_MAP_13CLS,
-    38: 13,                                                     # 13. Vimentin
-}
 
-CLASS_NAMES_13 = {
-    0: "Background", 1: "Mitochondria", 2: "Vesicles", 3: "Endosomes",
-    4: "Lysosomes", 5: "Lipid Droplets", 6: "Nucleus", 7: "Nuclear Pores",
-    8: "Microtubules", 9: "Peroxisomes", 10: "Golgi", 11: "ER", 12: "ERES",
-}
-
-CLASS_NAMES_14 = {
-    **CLASS_NAMES_13,
-    13: "Vimentin",
-}
-
-# Default class weights for the DiceCE loss (background-inclusive vector)
-DEFAULT_WEIGHTS_13 = [
-    0.8419, 1.0428, 0.8653, 0.6660, 1.4594,
-    0.3458, 0.6495, 1.6585, 0.7208, 0.1888,
-    0.7276, 1.5408, 1.5923,
+DEFAULT_WEIGHTS_30 = [
+    0.1000, 0.1157, 0.1000, 0.1000, 5.0000, 0.9902, 0.7605, 2.0054, 4.3424, 0.3085, 
+    0.1555, 3.5115, 0.9457, 5.0000, 1.4330, 0.1000, 0.1000, 5.0000, 5.0000, 0.9091, 
+    0.8071, 5.0000, 5.0000, 0.1249, 5.0000, 0.1000, 1.0100, 2.6797, 5.0000, 3.2246
 ]
 
-DEFAULT_WEIGHTS_14 = DEFAULT_WEIGHTS_13 + [1.7003]
 
 # ---------------------------------------------------------------------------
 # Dataclass
@@ -81,24 +93,17 @@ class PathsConfig:
 @dataclass
 class DataConfig:
     patch_dim: int = 128
-    max_jitter: int = 0
     seed: int = 42
-    num_classes: int = 13
+    num_classes: int = 30
     target_type: str = "labels"
-    target_classes: List[str] = field(default_factory=lambda: [
-        "endo", "ld", "lyso", "mito", "mt", "np", "nuc", "perox", "ves",
-        "golgi", "er", "eres",
-    ])
-    blueprint_json: str = "static_dynamic_baseline.json"
-    split_ratios: List[float] = field(default_factory=lambda: [0.80, 0.10, 0.10])
-    excluded_crop: Optional[str] = None
+    blueprint_json: str = "centroids_across_all_crops.json"
 
 
 @dataclass
 class ModelConfig:
     spatial_dims: int = 3
     in_channels: int = 1
-    out_channels: int = 13
+    out_channels: int = 30
     scale_conditioned: bool = False
     channels: List[int] = field(default_factory=lambda: [64, 128, 256, 512, 1024])
     strides: List[int] = field(default_factory=lambda: [2, 2, 2, 2])
@@ -124,7 +129,6 @@ class TrainingConfig:
     accumulation_steps: int = 1
     print_freq: int = 1
     num_workers: int = 2
-    sampler_balance_level: str = "raw"  # raw or organelle
     class_weights: Optional[List[float]] = None   # if None, uses defaults
 
 
@@ -145,10 +149,6 @@ class AugmentationConfig:
     elastic_alpha: float = 80.0
     elastic_sigma: float = 10.0
     elastic_prob: float = 0.3
-    # Resolution augmentation (novel)
-    resolution_aug_enabled: bool = False
-    resolution_scale_range: List[float] = field(default_factory=lambda: [0.25, 1.0])
-    resolution_aug_prob: float = 0.4
 
 
 @dataclass
@@ -165,17 +165,15 @@ class ExperimentConfig:
     class_names: Dict[int, str] = field(default_factory=dict, repr=False)
 
     def __post_init__(self):
-        # Auto-select label map and class names based on num_classes
+        # Enforce 30 classes for camera-ready pipeline
         if not self.label_map:
-            self.label_map = LABEL_MAP_14CLS if self.data.num_classes == 14 else LABEL_MAP_13CLS
+            self.label_map = LABEL_MAP_30CLS 
         if not self.class_names:
-            self.class_names = CLASS_NAMES_14 if self.data.num_classes == 14 else CLASS_NAMES_13
-        # Auto-select class weights if not provided
+            self.class_names = CLASS_NAMES_30
+            
         if self.training.class_weights is None:
-            self.training.class_weights = (
-                DEFAULT_WEIGHTS_14 if self.data.num_classes == 14 else DEFAULT_WEIGHTS_13
-            )
-        # Auto-set scheduler mode from early_stop_metric
+            self.training.class_weights = DEFAULT_WEIGHTS_30
+            
         if self.training.early_stop_metric == "val_dice":
             self.training.scheduler_mode = "max"
         else:
@@ -186,7 +184,6 @@ class ExperimentConfig:
 # YAML Loading with Inheritance
 # ---------------------------------------------------------------------------
 def _deep_merge(base: dict, override: dict) -> dict:
-    """Recursively merge override into base, returning a new dict."""
     merged = copy.deepcopy(base)
     for key, value in override.items():
         if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
@@ -197,7 +194,6 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 
 def _dict_to_config(raw: dict) -> ExperimentConfig:
-    """Convert a flat merged dict into an ExperimentConfig dataclass."""
     cfg = ExperimentConfig(
         experiment_name=raw.get("experiment_name", "unnamed-experiment"),
         paths=PathsConfig(**raw.get("paths", {})),
@@ -210,19 +206,12 @@ def _dict_to_config(raw: dict) -> ExperimentConfig:
 
 
 def load_config(config_path: str) -> ExperimentConfig:
-    """
-    Load a YAML config, resolving inheritance via the 'inherits' key.
-
-    If the config contains `inherits: base.yaml`, the base config is loaded
-    first and the child config is merged on top.
-    """
     config_path = os.path.abspath(config_path)
     config_dir = os.path.dirname(config_path)
 
     with open(config_path, "r") as f:
         raw = yaml.safe_load(f) or {}
 
-    # Resolve inheritance
     parent_file = raw.pop("inherits", None)
     if parent_file:
         parent_path = os.path.join(config_dir, parent_file)
@@ -230,7 +219,6 @@ def load_config(config_path: str) -> ExperimentConfig:
             parent_path = os.path.join(config_dir, parent_file)
         with open(parent_path, "r") as f:
             parent_raw = yaml.safe_load(f) or {}
-        # Remove inherits from parent (if any) to prevent recursive chains for now
         parent_raw.pop("inherits", None)
         raw = _deep_merge(parent_raw, raw)
 
