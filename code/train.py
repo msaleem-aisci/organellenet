@@ -106,12 +106,13 @@ def main():
         scale_conditioned=config.model.scale_conditioned,
     )
 
+    rfs_path = os.path.join(config.paths.json_dir, config.data.rfs_weights_path)
 
 
     # 6. Create data loaders
     train_sampler = create_balanced_sampler(
         dataset=train_dataset, 
-        weights_json_path=config.data.rfs_weights_path, 
+        weights_json_path=rfs_path,
         num_samples=6400
     )
 
