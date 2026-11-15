@@ -7,6 +7,7 @@ import os
 import collections
 import torch
 from torch.utils.data import WeightedRandomSampler
+import json
 
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_THIS_DIR, "..", ".."))
