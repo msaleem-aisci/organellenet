@@ -104,7 +104,7 @@ class DataConfig:
     num_classes: int = 30
     target_type: str = "labels"
     blueprint_json: str = "latest_baseline_centroids.json"
-    rfs_weights_path: str = "crop_rfs_weights.json"
+    rfs_weights_path: str = "/all_jsons/crop_rfs_weights.json"
     # RESTORED: train.py needs this for evaluation/logging
     target_classes: List[str] = field(default_factory=lambda: target_classes)
 
