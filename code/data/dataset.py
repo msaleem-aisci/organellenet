@@ -17,7 +17,7 @@ from code.data.augmentations import apply_augmentations
 class PatchDataset(Dataset):
     """
     Dynamic 3D crop dataset that randomly extracts patches at runtime.
-    Integrates 29-class atomic mapping, handles -1 unannotated regions, 
+    Integrates 29-class atomic mapping, handles -100 unannotated regions, 
     and applies geometric/intensity augmentations.
     """
     def __init__(self, 
@@ -44,8 +44,8 @@ class PatchDataset(Dataset):
         # 29 Atomic Organelles Mapping
         semantic_atomic_to_channel =label_map
 
-        # O(1) Lookup Array Initialization (-1 for unannotated/ignore)
-        self.label_lookup = np.full(256, -1, dtype=np.int64)
+        # O(1) Lookup Array Initialization (-100 for unannotated/ignore)
+        self.label_lookup = np.full(256, -100, dtype=np.int64)
         for semantic_id, class_id in semantic_atomic_to_channel.items():
             self.label_lookup[semantic_id] = class_id
 
@@ -129,7 +129,7 @@ class PatchDataset(Dataset):
             l_start = np.floor(l_center - half_patch).astype(int)
             e_start = np.floor(e_center - half_patch).astype(int)
 
-            lbl_np = extract_safe(label_zarr, l_start.tolist(), patch_shape, pad_value=-1, out_dtype=np.int64)
+            lbl_np = extract_safe(label_zarr, l_start.tolist(), patch_shape, pad_value=-100, out_dtype=np.int64)
             remapped_lbl = self.label_lookup[lbl_np]
 
             if np.any(remapped_lbl > 0) or attempt == max_retries - 1:
@@ -154,7 +154,7 @@ class PatchDataset(Dataset):
             for c in range(self.num_classes):
                 mask = (remapped_lbl == c)
                 if not np.any(mask):
-                    sdt_tensor[c] = -1.0
+                    sdt_tensor[c] = -100.0
                 else:
                     in_dist = ndi.distance_transform_edt(mask, sampling=resolution)
                     out_dist = ndi.distance_transform_edt(~mask, sampling=resolution)
