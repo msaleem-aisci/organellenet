@@ -88,8 +88,8 @@ target_classes = [
 # ---------------------------------------------------------------------------
 @dataclass
 class PathsConfig:
-    main_dir: str = "/kaggle/working/organellenet"
-    data_dir: str = "/kaggle/working/data"
+    main_dir: str = "/workspace/organellenet"
+    data_dir: str = "/mnt/dataset/raw_data"
     json_dir: str = ""   # auto-resolved
 
     def __post_init__(self):
