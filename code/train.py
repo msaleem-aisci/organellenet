@@ -146,7 +146,7 @@ def main():
     model, device = build_model(config)
     criterion = build_loss(config, device)
 
-    # 7.1. Log model parameters
+
     model_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable Parameters: {model_params:,}")
     params_log_path = os.path.join(run_paths["results_dir"], "model_parameters.txt")
