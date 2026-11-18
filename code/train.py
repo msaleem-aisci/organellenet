@@ -137,10 +137,10 @@ def main():
         pin_memory=True,
         drop_last=False,
     )
-    from code.utils.visualization import save_batch_visualization
-    viz_path = "/kaggle/working/organellenet/test_batch_viz.png"
-    save_batch_visualization(train_loader, save_path=viz_path, batch_index=0)
-    sys.exit(0)
+    # from code.utils.visualization import save_batch_visualization
+    # viz_path = "/kaggle/working/organellenet/test_batch_viz.png"
+    # save_batch_visualization(train_loader, save_path=viz_path, batch_index=0)
+    # sys.exit(0)
 
     # 7. Build model and loss
     model, device = build_model(config)
