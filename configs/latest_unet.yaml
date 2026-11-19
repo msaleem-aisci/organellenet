@@ -57,4 +57,4 @@ training:
   early_stop_metric: val_dice
   scheduler_mode: max
   print_freq: 200
-  num_epochs: 10
+  num_epochs: 50
