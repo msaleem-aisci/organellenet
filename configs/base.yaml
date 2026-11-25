@@ -12,25 +12,42 @@ paths:
 
 data:
   patch_dim: 128
-  max_jitter: 0
+  max_jitter: 48
   seed: 42
-  num_classes: 13
+  num_classes: 30          # Background (0) + 29 atomic semantic classes (1..29)
   target_classes:
-    - endo
-    - ld
-    - lyso
-    - mito
-    - mt
-    - np
-    - nuc
-    - perox
-    - ves
-    - golgi
-    - er
-    - eres
-  blueprint_json: static_dynamic_baseline.json
-  split_ratios: [0.80, 0.10, 0.10]
-  excluded_crop: null
+    - pm
+    - mito_mem
+    - mito_lum
+    - mito_ribo
+    - golgi_mem
+    - golgi_lum
+    - ves_mem
+    - ves_lum
+    - endo_mem
+    - endo_lum
+    - lyso_mem
+    - lyso_lum
+    - ld_mem
+    - ld_lum
+    - er_mem
+    - er_lum
+    - eres_mem
+    - eres_lum
+    - ne_mem
+    - ne_lum
+    - np_out
+    - np_in
+    - hchrom
+    - echrom
+    - nucpl
+    - mt_out
+    - mt_in
+    - perox_mem
+    - perox_lum
+  train_json: train_anchors.json
+  val_json: val_anchors.json
+  test_json: test_anchors.json
 
 model:
   spatial_dims: 3
