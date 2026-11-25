@@ -73,15 +73,13 @@ def main():
     val_patch_json_path = os.path.join(config.paths.json_dir, config.data.val_json)
     test_patch_json_path = os.path.join(config.paths.json_dir, config.data.test_json)
     
-    print(f"Train anchores pth: {train_patch_json_path}")
-    sys.exit(0)    
     # 4. Build zarr map
     zarr_map = build_zarr_map(config.paths.data_dir)
     print(f"Zarr map built: {len(zarr_map)} datasets found")
 
     # 5. Create datasets
     train_dataset = PatchDataset(
-        json_path=split_paths["train_path"],
+        json_path=train_patch_json_path,
         zarr_map=zarr_map,
         label_map=config.label_map,
         patch_dim=config.data.patch_dim,
@@ -92,7 +90,7 @@ def main():
         scale_conditioned=config.model.scale_conditioned,
     )
     val_dataset = PatchDataset(
-        json_path=split_paths["val_path"],
+        json_path= val_patch_json_path,
         zarr_map=zarr_map,
         label_map=config.label_map,
         patch_dim=config.data.patch_dim,
@@ -124,6 +122,23 @@ def main():
         pin_memory=True,
         drop_last=False,
     )
+
+    # --- Inspect train_loader ---
+    print(f"\n{'='*60}")
+    print(f"Train Loader: {len(train_loader)} batches (batch_size={train_loader.batch_size})")
+    print(f"Val Loader:   {len(val_loader)} batches (batch_size={val_loader.batch_size})")
+
+    em_batch, lbl_batch = next(iter(train_loader))
+    print(f"EM batch  -> shape: {tuple(em_batch.shape)}, dtype: {em_batch.dtype}, "
+          f"min: {em_batch.min().item():.4f}, max: {em_batch.max().item():.4f}")
+    print(f"LBL batch -> shape: {tuple(lbl_batch.shape)}, dtype: {lbl_batch.dtype}, "
+          f"unique IDs: {torch.unique(lbl_batch).tolist()}")
+    print(f"{'='*60}\n")
+
+
+
+
+    sys.exit(0)
 
     # 7. Build model and loss
     model, device = build_model(config)

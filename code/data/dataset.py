@@ -39,7 +39,7 @@ class PatchDataset(Dataset):
     """
 
     def __init__(self, json_path, zarr_map, label_map, patch_dim=128, max_jitter=0,
-                 augmentation_config=None, target_type="labels", num_classes=13,
+                 augmentation_config=None, target_type="labels", num_classes=30,
                  scale_conditioned=False):
         self.patch_dim = patch_dim
         self.max_jitter = max_jitter
@@ -53,11 +53,16 @@ class PatchDataset(Dataset):
         with open(json_path, "r") as f:
             raw_patches = json.load(f)
 
-        # Build fast label lookup array from the mapping dict
-        self.label_lookup = np.zeros(256, dtype=np.int64)
-        for semantic_id, instance_id in label_map.items():
-            if semantic_id < 256:
-                self.label_lookup[semantic_id] = instance_id
+      
+        self.label_lookup = np.full(256, -1, dtype=np.int64)
+        
+        # Map the 29 foreground classes
+        for semantic_id, class_id in label_map.items():
+            self.label_lookup[semantic_id] = class_id
+
+
+        self.label_lookup[1] = 0   # ecs
+        self.label_lookup[35] = 0  # cyto
 
         # Validate patches against available zarr data
         self.patches = []
@@ -164,25 +169,45 @@ class PatchDataset(Dataset):
             jitter_vector = np.zeros(3, dtype=int)
 
         # 5. Dynamic Boundary Clamping
-        lbl_shape = np.array(label_zarr.shape)
-        max_l_start = np.maximum(lbl_shape - self.patch_dim, 0)
+        # 5. Dynamic Boundary Clamping (handles both large crops and smaller level2 crops)
+        lbl_shape = np.array(label_zarr.shape, dtype=int)
+        clamped_l_start = base_l_start + jitter_vector
 
-        clamped_l_start = np.clip(base_l_start + jitter_vector, 0, max_l_start)
+        for d in range(3):
+            if lbl_shape[d] >= self.patch_dim:
+                # Crop is larger than patch: keep patch strictly inside [0, lbl_shape - patch_dim]
+                clamped_l_start[d] = np.clip(
+                    clamped_l_start[d], 0, lbl_shape[d] - self.patch_dim
+                )
+            else:
+                # Crop is smaller than patch (e.g., level2): keep entire crop inside the patch
+                # while allowing valid jitter and symmetric -1 padding around it
+                min_start = lbl_shape[d] - self.patch_dim
+                clamped_l_start[d] = np.clip(clamped_l_start[d], min_start, 0)
+
         effective_jitter = clamped_l_start - base_l_start
         clamped_e_start = base_e_start + effective_jitter
 
         # 6. Extraction
+        # 6. Extraction
         lbl_np = extract_safe(
             label_zarr,
-            clamped_l_start,
+            clamped_l_start.tolist(),
             [self.patch_dim, self.patch_dim, self.patch_dim],
-            pad_value=0,
+            pad_value=-1,
             out_dtype=np.int64,
         )
-        em_np = extract_safe(em_zarr, clamped_e_start, e_shape.tolist(), pad_value=0)
+        em_np = extract_safe(
+            em_zarr,
+            clamped_e_start.tolist(),
+            e_shape.tolist(),
+            pad_value=0,
+        )
 
-        # 7. Semantic Remapping and Tensor Conversion
-        remapped_lbl = self.label_lookup[lbl_np]
+        # 7. Safe Semantic Remapping (-1 stays -1 for loss ignore_index)
+        remapped_lbl = np.full(lbl_np.shape, -1, dtype=np.int64)
+        valid_ids = (lbl_np >= 0) & (lbl_np < 256)
+        remapped_lbl[valid_ids] = self.label_lookup[lbl_np[valid_ids]]
 
         # 8. Normalize EM to [0, 1] float32
         em_float = em_np.astype(np.float32) / 255.0
