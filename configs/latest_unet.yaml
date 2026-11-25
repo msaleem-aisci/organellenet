@@ -43,9 +43,9 @@ data:
     - mt_in
     - perox_mem
     - perox_lum
-  train_json: train_anchors.json
-  val_json: val_anchors.json
-  test_json: test_anchors.json
+  train_json: train_anchor.json
+  val_json: val_anchor.json
+  test_json: test_anchor.json
 
 model:
   out_channels: 30
