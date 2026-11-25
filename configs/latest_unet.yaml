@@ -9,29 +9,47 @@ inherits: base.yaml
 experiment_name: latest-unet-14cls-jitter48-dice
 
 data:
+  patch_dim: 128
   max_jitter: 48
-  num_classes: 14
+  seed: 42
+  num_classes: 30          # Background (0) + 29 atomic semantic classes (1..29)
   target_classes:
-    - endo
-    - ld
-    - lyso
-    - mito
-    - mt
-    - np
-    - nuc
-    - perox
-    - ves
-    - vim
-    - golgi
-    - er
-    - eres
-  blueprint_json: latest_baseline_centroids.json
-  split_ratios: [0.85, 0.09, 0.06]
-  excluded_crop: crop234
+    - pm
+    - mito_mem
+    - mito_lum
+    - mito_ribo
+    - golgi_mem
+    - golgi_lum
+    - ves_mem
+    - ves_lum
+    - endo_mem
+    - endo_lum
+    - lyso_mem
+    - lyso_lum
+    - ld_mem
+    - ld_lum
+    - er_mem
+    - er_lum
+    - eres_mem
+    - eres_lum
+    - ne_mem
+    - ne_lum
+    - np_out
+    - np_in
+    - hchrom
+    - echrom
+    - nucpl
+    - mt_out
+    - mt_in
+    - perox_mem
+    - perox_lum
+  train_json: train_anchors.json
+  val_json: val_anchors.json
+  test_json: test_anchors.json
 
 model:
-  out_channels: 14
-  strides: [1, 2, 2, 2]
+  out_channels: 30
+  strides: [2, 2, 2, 2]
 
 training:
   batch_size: 4
