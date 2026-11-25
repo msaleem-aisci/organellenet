@@ -19,14 +19,8 @@ if _PROJECT_ROOT not in sys.path:
 
 
 def prepare_splits(
-    blueprint_json_path: str,
-    output_dir: str,
-    target_classes: list,
-    split_ratios: list = None,
-    excluded_crop: str = None,
-    class_mapping: dict = None,
-    strip_suffixes: bool = True,
-    seed: int = 42,
+    train_patch_set_path: str,
+   
 ) -> dict:
     """
     Filter a blueprint JSON by target classes, optionally exclude a crop,
@@ -52,14 +46,12 @@ def prepare_splits(
     dict
         Keys: 'train_path', 'val_path', 'test_path', 'stats' (dict with counts).
     """
-    if split_ratios is None:
-        split_ratios = [0.80, 0.10, 0.10]
 
     os.makedirs(output_dir, exist_ok=True)
 
     # 1. Load blueprint
-    with open(blueprint_json_path, "r") as f:
-        blueprint = json.load(f)
+    with open(train_patch_set_path, "r") as f:
+        train_patch_set = json.load(f)
 
     target_set = set(target_classes)
 

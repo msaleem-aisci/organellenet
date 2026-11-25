@@ -69,19 +69,11 @@ def main():
     print(f"Run directory: {run_paths['run_dir']}")
 
     # 3. Prepare data splits
-    blueprint_path = os.path.join(config.paths.json_dir, config.data.blueprint_json)
-    split_output_dir = os.path.join(run_paths["run_dir"], "splits")
-
-    split_paths = prepare_splits(
-        blueprint_json_path=blueprint_path,
-        output_dir=split_output_dir,
-        target_classes=config.data.target_classes,
-        split_ratios=config.data.split_ratios,
-        excluded_crop=config.data.excluded_crop,
-        seed=config.data.seed,
-    )
-
+    train_patch_set_path = os.path.join(config.paths.json_dir, config.data.train_anchore)
+    val_patch_set_path = os.path.join(config.paths.json_dir, config.data.val_anchore)
+    test_patch_set_path = os.path.join(config.paths.json_dir, config.data.test_anchore)
     
+    print(f"Train anchores pth: {train_patch_set_path}")
     sys.exit(0)    
     # 4. Build zarr map
     zarr_map = build_zarr_map(config.paths.data_dir)
