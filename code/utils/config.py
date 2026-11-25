@@ -75,7 +75,6 @@ DEFAULT_WEIGHTS_30 = [
     0.8071, 5.0000, 5.0000, 0.1249, 5.0000, 0.1000, 1.0100, 2.6797, 5.0000, 3.2246
 ]
 
-DEFAULT_WEIGHTS_14 = DEFAULT_WEIGHTS_13 + [1.7003]
 
 target_classes = [
     "pm", "mito_mem", "mito_lum", "mito_ribo", "golgi_mem", "golgi_lum",
