@@ -73,7 +73,7 @@ def main():
     val_patch_json_path = os.path.join(config.paths.json_dir, config.data.val_json)
     test_patch_json_path = os.path.join(config.paths.json_dir, config.data.test_json)
     
-    print(f"Train anchores pth: {train_patch_set_path}")
+    print(f"Train anchores pth: {train_patch_json_path}")
     sys.exit(0)    
     # 4. Build zarr map
     zarr_map = build_zarr_map(config.paths.data_dir)
