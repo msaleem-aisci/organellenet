@@ -297,10 +297,33 @@ class Trainer:
                 val_epoch_loss += val_loss.item()
 
                 # Dice metric accumulation (if enabled)
+                # Dice metric accumulation (if enabled)
                 if self.use_dice_metric:
-                    val_outputs = [self.post_pred(i) for i in outputs]
-                    val_labels = [self.post_label(i) for i in lbl_batch]
-                    self.dice_metric(y_pred=val_outputs, y=val_labels)
+                    if getattr(self.config.data, "target_type", "labels") == "sdt":
+                        val_outputs = [self.post_pred(i) for i in outputs]
+                        val_labels = [self.post_label(i) for i in lbl_batch]
+                        self.dice_metric(y_pred=val_outputs, y=val_labels)
+                    else:
+                        num_classes = self.config.model.out_channels
+                        lbl_idx = lbl_batch.squeeze(1) if lbl_batch.ndim == 5 else lbl_batch
+                        valid_mask = (lbl_idx != -1)  # [B, D, H, W]
+
+                        # Safe one-hot for ground truth (replace -1 with 0, then zero out masked voxels)
+                        safe_lbl = torch.where(valid_mask, lbl_idx, torch.zeros_like(lbl_idx))
+                        y_onehot = torch.nn.functional.one_hot(safe_lbl, num_classes=num_classes)
+                        y_onehot = y_onehot.permute(0, 4, 1, 2, 3).float()
+
+                        # One-hot for predictions
+                        pred_idx = torch.argmax(outputs, dim=1)
+                        y_pred_onehot = torch.nn.functional.one_hot(pred_idx, num_classes=num_classes)
+                        y_pred_onehot = y_pred_onehot.permute(0, 4, 1, 2, 3).float()
+
+                        # Zero out ignored (-1) regions so they don't affect validation Dice
+                        valid_mask_5d = valid_mask.unsqueeze(1).float()
+                        self.dice_metric(
+                            y_pred=y_pred_onehot * valid_mask_5d,
+                            y=y_onehot * valid_mask_5d,
+                        )
 
                 if (step + 1) % self.print_freq == 0:
                     pbar.set_postfix(loss=f"{val_loss.item():.4f}")
