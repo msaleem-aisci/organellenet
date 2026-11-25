@@ -29,21 +29,27 @@ class BoundaryWeightedMSELoss(nn.Module):
 
 
 class MaskedDiceCELoss(nn.Module):
-    """
-    3D Multi-class Dice + Cross-Entropy loss that ignores target == -1 voxels
-    (unannotated regions in CellMap 'all' volumes and out-of-crop padding).
-    """
 
     def __init__(self, num_classes=30, weight=None, ignore_index=-1, include_background=False):
         super().__init__()
         self.num_classes = num_classes
         self.ignore_index = ignore_index
-        self.ce = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index)
+
+        if weight is not None and len(weight) == num_classes - 1:
+            # If 29 foreground weights are passed, prepend 0.1 for Background (index 0) for CE
+            ce_weight = torch.cat([torch.tensor([0.1], device=weight.device, dtype=weight.dtype), weight])
+            dice_weight = weight if not include_background else ce_weight
+        else:
+            ce_weight = weight
+            dice_weight = weight[1:] if (weight is not None and not include_background) else weight
+
+        self.ce = nn.CrossEntropyLoss(weight=ce_weight, ignore_index=ignore_index)
         self.dice = DiceLoss(
             to_onehot_y=False,
             softmax=False,
             include_background=include_background,
-            weight=weight,
+            weight=dice_weight,
+            batch=True,
         )
 
     def forward(self, logits, target):
