@@ -6,7 +6,7 @@
 # Dice-based scheduling/early-stopping, crop234 exclusion
 inherits: base.yaml
 
-experiment_name: latest-unet-14cls-jitter48-dice
+experiment_name: latest--unet--30cls--jitter48--dice
 
 data:
   patch_dim: 128
@@ -58,4 +58,4 @@ training:
   early_stop_metric: val_dice
   scheduler_mode: max
   print_freq: 200
-  num_epochs: 100
+  num_epochs: 20
