@@ -7,8 +7,8 @@
 experiment_name: unnamed-experiment
 
 paths:
-  main_dir: /kaggle/working/
-  data_dir: /kaggle/working/data
+  main_dir: /kaggle/working/organellenet
+  data_dir: /kaggle/working/organellenet/data
 
 data:
   patch_dim: 128
