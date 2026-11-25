@@ -69,9 +69,9 @@ def main():
     print(f"Run directory: {run_paths['run_dir']}")
 
     # 3. Prepare data splits
-    train_patch_set_path = os.path.join(config.paths.json_dir, config.data.train_json)
-    val_patch_set_path = os.path.join(config.paths.json_dir, config.data.val_json)
-    test_patch_set_path = os.path.join(config.paths.json_dir, config.data.test_json)
+    train_patch_json_path = os.path.join(config.paths.json_dir, config.data.train_json)
+    val_patch_json_path = os.path.join(config.paths.json_dir, config.data.val_json)
+    test_patch_json_path = os.path.join(config.paths.json_dir, config.data.test_json)
     
     print(f"Train anchores pth: {train_patch_set_path}")
     sys.exit(0)    
