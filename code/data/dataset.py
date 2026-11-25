@@ -145,7 +145,7 @@ class PatchDataset(Dataset):
         # 1. Load exact centers from the JSON
         l_center = np.array(patch["l_center"], dtype=float)
         e_center = np.array(patch["e_center"], dtype=float)
-        e_shape = np.array(patch["e_shape"], dtype=float)
+        e_shape = np.array(patch["patch_shape"], dtype=float)
         
         # Scale e_shape if patch_dim differs from the blueprint's base 128
         if self.patch_dim != 128:
