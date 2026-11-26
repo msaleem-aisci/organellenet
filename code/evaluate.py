@@ -2,8 +2,8 @@
 OrganelleNet — Evaluation Entry Point
 
 Usage:
-    python code/evaluate.py --config configs/static_unet.yaml \
-        --checkpoint runs/static-unet-13cls-nojitter/ckpts/best_model.pth
+    python code/evaluate.py --config configs/latest_unet.yaml \
+        --checkpoint runs/latest--unet--30cls--jitter48--dice/ckpts/best_model.pth
 """
 
 import os
@@ -56,12 +56,11 @@ def main():
 
     test_json = args.test_json
     if test_json is None:
-        # Default: look in the run's splits directory
-        test_json = os.path.join(run_paths["run_dir"], "splits", "test.json")
+        test_json = os.path.join(config.paths.json_dir, config.data.test_json)
 
     if not os.path.exists(test_json):
         print(f"Error: Test JSON not found at {test_json}")
-        print("Run training first or provide --test-json explicitly.")
+        print("Check config.paths.json_dir / config.data.test_json or provide --test-json explicitly.")
         sys.exit(1)
 
     test_dataset = PatchDataset(
@@ -70,6 +69,9 @@ def main():
         label_map=config.label_map,
         patch_dim=config.data.patch_dim,
         max_jitter=0,
+        target_type=config.data.target_type,
+        num_classes=config.data.num_classes,
+        scale_conditioned=config.model.scale_conditioned,
     )
     test_loader = DataLoader(
         test_dataset, batch_size=1, shuffle=False, num_workers=config.training.num_workers
