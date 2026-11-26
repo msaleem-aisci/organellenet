@@ -120,10 +120,18 @@ class Trainer:
             self.best_metric = checkpoint.get("best_metric", self.best_metric)
             self.early_stop_counter = checkpoint.get("early_stop_counter", 0)
 
-            print(f"Resumed at epoch {self.start_epoch} | Best metric: {self.best_metric:.4f}")
+            # Ensure CSV log exists even if --log-csv wasn't supplied
+            if not os.path.exists(self.log_csv_path):
+                header = "epoch,lr,train_loss,val_loss"
+                if self.use_dice_metric:
+                    header += ",val_dice"
+                header += "\n"
+                with open(self.log_csv_path, "w") as f:
+                    f.write(header)
+
+            print(f"Resumed at epoch {self.start_epoch + 1} | Best metric: {self.best_metric:.4f}")
         else:
             print("No checkpoint found. Starting from scratch.")
-            # Initialize the CSV log header
             header = "epoch,lr,train_loss,val_loss"
             if self.use_dice_metric:
                 header += ",val_dice"

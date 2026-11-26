@@ -10,6 +10,7 @@ Usage:
 import os
 import sys
 import argparse
+import shutil
 
 # Ensure project root is on sys.path for cross-module imports
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +40,9 @@ def parse_args():
     parser.add_argument("--name", type=str, default=None, help="Override experiment name")
     parser.add_argument("--patch-dim", type=int, default=None, help="Override patch dimension")
     parser.add_argument("--batch-size", type=int, default=None, help="Override batch size")
+    parser.add_argument("--resume-ckpt", type=str, default=None, help="Path to existing resume_ckpt.pth")
+    parser.add_argument("--best-model", type=str, default=None, help="Path to existing best_model.pth")
+    parser.add_argument("--log-csv", type=str, default=None, help="Path to existing training_log.csv")
     return parser.parse_args()
 
 
@@ -67,6 +71,25 @@ def main():
     # 2. Setup run directory
     run_paths = setup_run_directory(config, config_path=args.config)
     print(f"Run directory: {run_paths['run_dir']}")
+
+    # 2.1 Seed writable run directory from external Kaggle input paths if provided
+    if args.resume_ckpt is not None:
+        if not os.path.exists(args.resume_ckpt):
+            raise FileNotFoundError(f"Provided --resume-ckpt not found: {args.resume_ckpt}")
+        shutil.copy2(args.resume_ckpt, run_paths["resume_ckpt_path"])
+        print(f"Copied resume checkpoint to: {run_paths['resume_ckpt_path']}")
+
+    if args.best_model is not None:
+        if not os.path.exists(args.best_model):
+            raise FileNotFoundError(f"Provided --best-model not found: {args.best_model}")
+        shutil.copy2(args.best_model, run_paths["best_model_path"])
+        print(f"Copied best model weights to: {run_paths['best_model_path']}")
+
+    if args.log_csv is not None:
+        if not os.path.exists(args.log_csv):
+            raise FileNotFoundError(f"Provided --log-csv not found: {args.log_csv}")
+        shutil.copy2(args.log_csv, run_paths["log_csv_path"])
+        print(f"Copied training log CSV to: {run_paths['log_csv_path']}")
 
     # 3. Prepare data splits
     train_patch_json_path = os.path.join(config.paths.json_dir, config.data.train_json)
