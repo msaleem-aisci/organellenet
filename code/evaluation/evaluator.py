@@ -94,15 +94,16 @@ class SegmentationEvaluator:
 
         self.confusion_matrix += hist.cpu()
 
-        # HD95 computation (spatial metric)
+        # HD95 computation (spatial metric, ignoring -1 unannotated/padded voxels)
         preds_np = preds.cpu().numpy()
         targets_np = targets.cpu().numpy()
         batch_size = preds_np.shape[0]
 
         for b in range(batch_size):
+            valid_np = (targets_np[b] >= 0) & (targets_np[b] < self.num_classes)
             for c in range(self.num_classes):
-                pred_c = preds_np[b] == c
-                target_c = targets_np[b] == c
+                pred_c = (preds_np[b] == c) & valid_np
+                target_c = (targets_np[b] == c)
 
                 if pred_c.any() or target_c.any():
                     hd95_val = compute_hd95(pred_c, target_c)
