@@ -1,7 +1,9 @@
 # OrganelleNet
 
-3D organelle segmentation for the [CellMap Segmentation Challenge](https://github.com/janelia-cellmap/cellmap-segmentation-challenge), targeting [NewInML 2026 @ NeurIPS](https://newinml.github.io/NewInML2026NeurIPS/).
+**3D Multi-Organelle Segmentation in Volume Electron Microscopy**  
+*Accepted at the [NewInML 2026 @ NeurIPS](https://newinml.github.io/NewInML2026NeurIPS/): "Foreground-Seeded Patch Sampling for 3D Multi-Organelle Segmentation in Volume EM"*
 
+OrganelleNet is a modular 3D volumetric segmentation pipeline built for the [CellMap Segmentation Challenge](https://github.com/janelia-cellmap/cellmap-segmentation-challenge) across 22 FIB-SEM datasets. It addresses severe class imbalance and sparse annotations in 3D biological volumes through foreground-seeded patch extraction with bounded spatial jitter, crop-level data splits, and boundary-aware evaluation (Dice, IoU, HD95).
 ## Project Structure
 
 ```text
